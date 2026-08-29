@@ -1,0 +1,538 @@
+{
+  "generated_at": "2026-08-29T16:16:48.087Z",
+  "status": "UNSCORED — human review required",
+  "resource_note": "Baseline receives current Module 2 data plus one direct model call; full runs additionally receive enabled research, evidence workspace support, and critic verification.",
+  "cases": [
+    {
+      "id": "case_01",
+      "place_id": "920587237",
+      "label": "Adopt Me",
+      "role": "mature high-scale control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_02",
+      "place_id": "2753915549",
+      "label": "Blox Fruits",
+      "role": "mature breakout control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_03",
+      "place_id": "537413528",
+      "label": "Build A Boat For Treasure",
+      "role": "creative loop control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_04",
+      "place_id": "155615604",
+      "label": "Prison Life",
+      "role": "legacy game control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_05",
+      "place_id": "6284583030",
+      "label": "Pet Simulator X",
+      "role": "franchise comparator",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_06",
+      "place_id": "4924922222",
+      "label": "Brookhaven",
+      "role": "social roleplay control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_07",
+      "place_id": "606849621",
+      "label": "Jailbreak",
+      "role": "live-service control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_08",
+      "place_id": "286090429",
+      "label": "Arsenal",
+      "role": "competitive action control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_09",
+      "place_id": "6516141723",
+      "label": "DOORS",
+      "role": "horror breakout control",
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    },
+    {
+      "id": "case_10",
+      "place_id": "8737899170",
+      "label": "Contradictory cached case",
+      "role": "hard case: update spike vs durability",
+      "fixture": true,
+      "baseline_run_id": null,
+      "full_run_id": null,
+      "rubric": [
+        {
+          "id": "quantitative_signals",
+          "label": "Important current quantitative signals",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "external_context",
+          "label": "Relevant external context and defensible comparables",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "epistemic_labels",
+          "label": "Facts separated from inference",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "evidence_links",
+          "label": "Material claims link to evidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "counterevidence",
+          "label": "Uncertainty and counterevidence",
+          "max": 5,
+          "score": null
+        },
+        {
+          "id": "recommendation",
+          "label": "Useful and proportionate recommendation",
+          "max": 5,
+          "score": null
+        }
+      ],
+      "measurements": {
+        "runtime_ms": null,
+        "estimated_cost_usd": null,
+        "provider_failures": null,
+        "evidence_coverage": null,
+        "unsupported_claims": null
+      }
+    }
+  ]
+}

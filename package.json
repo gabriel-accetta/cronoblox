@@ -1,0 +1,40 @@
+{
+  "name": "cronoblox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "engines": { "node": ">=20.10.0" },
+  "scripts": {
+    "dev": "pnpm --filter @cronoblox/web dev",
+    "dev:web": "pnpm --filter @cronoblox/web dev",
+    "dev:worker": "pnpm --filter @cronoblox/worker dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:roblox-contract": "tsx scripts/roblox-contract-smoke.ts",
+    "db:generate": "pnpm --filter @cronoblox/db generate",
+    "db:migrate": "pnpm --filter @cronoblox/db migrate",
+    "db:seed": "pnpm --filter @cronoblox/db seed",
+    "evaluate": "pnpm --filter @cronoblox/evaluation evaluate"
+  },
+  "devDependencies": {
+    "@cronoblox/config": "workspace:*",
+    "@cronoblox/contracts": "workspace:*",
+    "@cronoblox/engine": "workspace:*",
+    "@cronoblox/evidence": "workspace:*",
+    "@cronoblox/llm": "workspace:*",
+    "@cronoblox/module-critic": "workspace:*",
+    "@cronoblox/module-market-intelligence": "workspace:*",
+    "@cronoblox/module-roblox-data": "workspace:*",
+    "@cronoblox/module-sdk": "workspace:*",
+    "@cronoblox/source-roblox": "workspace:*",
+    "@playwright/test": "1.54.2",
+    "@types/node": "20.17.30",
+    "typescript": "5.8.3",
+    "tsx": "4.20.5",
+    "vitest": "3.2.4"
+  }
+}

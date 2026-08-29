@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cronoblox
+      POSTGRES_USER: cronoblox
+      POSTGRES_PASSWORD: cronoblox
+    ports: ["5434:5432"]
+    volumes: ["cronoblox_postgres:/var/lib/postgresql/data"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U cronoblox"], interval: 3s, timeout: 3s, retries: 20 }
+  redis:
+    image: redis:7-alpine
+    ports: ["6381:6379"]
+    volumes: ["cronoblox_redis:/data"]
+    healthcheck: { test: ["CMD", "redis-cli", "ping"], interval: 3s, timeout: 3s, retries: 20 }
+volumes:
+  cronoblox_postgres:
+  cronoblox_redis:

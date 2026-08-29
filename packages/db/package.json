@@ -1,0 +1,7 @@
+{
+  "name": "@cronoblox/db", "version": "0.1.0", "private": true, "type": "module",
+  "main": "src/index.ts", "types": "src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit", "generate": "drizzle-kit generate", "migrate": "tsx src/migrate.ts", "seed": "tsx src/seed.ts" },
+  "dependencies": { "@cronoblox/config": "workspace:*", "@cronoblox/contracts": "workspace:*", "drizzle-orm": "0.44.5", "postgres": "3.4.7" },
+  "devDependencies": { "drizzle-kit": "0.31.4", "tsx": "4.20.5" }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "@cronoblox/module-roblox-data", "version": "0.1.0", "private": true, "type": "module", "main": "src/index.ts", "types": "src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": { "@cronoblox/contracts": "workspace:*", "@cronoblox/evidence": "workspace:*", "@cronoblox/module-sdk": "workspace:*", "@cronoblox/source-roblox": "workspace:*", "zod": "3.25.76" }
+}

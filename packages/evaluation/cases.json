@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "frozen_at": "2026-08-29",
+  "selection_method": "Fixed public examples spanning genres, audience sizes, creation eras, and one intentionally contradictory/update-sensitive case. IDs are frozen before model tuning.",
+  "filters": { "locale": "en-US", "device": "desktop", "player_data": false },
+  "cases": [
+    { "id": "case_01", "place_id": "920587237", "label": "Adopt Me", "role": "mature high-scale control" },
+    { "id": "case_02", "place_id": "2753915549", "label": "Blox Fruits", "role": "mature breakout control" },
+    { "id": "case_03", "place_id": "537413528", "label": "Build A Boat For Treasure", "role": "creative loop control" },
+    { "id": "case_04", "place_id": "155615604", "label": "Prison Life", "role": "legacy game control" },
+    { "id": "case_05", "place_id": "6284583030", "label": "Pet Simulator X", "role": "franchise comparator" },
+    { "id": "case_06", "place_id": "4924922222", "label": "Brookhaven", "role": "social roleplay control" },
+    { "id": "case_07", "place_id": "606849621", "label": "Jailbreak", "role": "live-service control" },
+    { "id": "case_08", "place_id": "286090429", "label": "Arsenal", "role": "competitive action control" },
+    { "id": "case_09", "place_id": "6516141723", "label": "DOORS", "role": "horror breakout control" },
+    { "id": "case_10", "place_id": "8737899170", "label": "Contradictory cached case", "role": "hard case: update spike vs durability", "fixture": true }
+  ]
+}

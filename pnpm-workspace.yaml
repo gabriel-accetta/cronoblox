@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "packages/modules/*"
+  - "packages/sources/*"
+overrides:
+  vite: 6.1.0
+allowBuilds:
+  esbuild: true
+  msgpackr-extract: true
+  sharp: true
