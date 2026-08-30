@@ -14,7 +14,7 @@ describe("OpenRouter agent loop", () => {
         id: "gen-test", object: "chat.completion", created: 1, model: "openai/gpt-5-mini",
         choices: [{
           index: 0, finish_reason: "tool_calls",
-          message: { role: "assistant", content: null, tool_calls: [{ id: "call_1", type: "function", function: { name: "submit_answer", arguments: JSON.stringify({ breakout_potential: "MODERATE", confidence: "LOW" }) } }] },
+          message: { role: "assistant", content: null, tool_calls: [{ id: "call_1", type: "function", function: { name: "submit_answer", arguments: JSON.stringify({ breakout_potential: "MODERATE" }) } }] },
         }],
         usage: { prompt_tokens: 12, completion_tokens: 7, total_tokens: 19, cost: 0.0004 },
       }), { status: 200, headers: { "content-type": "application/json" } });
@@ -25,8 +25,8 @@ describe("OpenRouter agent loop", () => {
     const { result, iterations } = await runAgentLoop({
       client, model: "openai/gpt-5-mini", system: "You are a test agent.", userInput: { game: "Test game" },
       tools: [],
-      submit: { name: "submit_answer", description: "Submit your final answer.", schema: z.object({ breakout_potential: z.enum(["LOW", "MODERATE", "HIGH", "VERY HIGH"]), confidence: z.enum(["LOW", "MEDIUM", "HIGH"]) }) },
-      budget: withIterationCap(budget, 4),
+      submit: { name: "submit_answer", description: "Submit your final answer.", schema: z.object({ breakout_potential: z.enum(["LOW", "MODERATE", "HIGH", "VERY HIGH"]) }) },
+      budget: withIterationCap(budget, 4, 10),
       signal: new AbortController().signal,
     });
 

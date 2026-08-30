@@ -12,7 +12,7 @@ export class FixtureAnalyst {
     const support = input.evidence.filter((item) => item.relationship === "supports");
     const context = input.evidence.filter((item) => item.relationship === "contextualizes");
     const thesis = ThesisSchema.parse({
-      breakout_potential: "HIGH", confidence: "HIGH", recommendation: input.mode === "developer" ? "Protect retention while testing whether post-update discovery persists." : "Watch closely and advance to deeper diligence only if attention persists beyond the update window.",
+      breakout_potential: "HIGH", verdict_line: "A meaningful live audience and strong normalized approval, but no proof the spike outlives the update window.", recommendation: input.mode === "developer" ? "Protect retention while testing whether post-update discovery persists." : "Watch closely and advance to deeper diligence only if attention persists beyond the update window.",
       supporting_claims: [
         { id: "cl_momentum", text: "The game combines a meaningful live audience with strong normalized approval.", evidence_ids: support.slice(0, 2).map((item) => item.id) },
         { id: "cl_diversity", text: "Recent attention is distributed across multiple creators rather than one obvious source.", evidence_ids: context.slice(-2).map((item) => item.id) },

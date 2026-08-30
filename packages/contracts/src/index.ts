@@ -58,10 +58,18 @@ export const ModuleResultSchema = <T extends z.ZodType>(output: T) => z.object({
 export const UserModeSchema = z.enum(["developer", "investor"]);
 export type UserMode = z.infer<typeof UserModeSchema>;
 
+/**
+ * How hard the whole system works on one run. The profile decides *which* modules run; effort
+ * decides how much budget, how many turns, and how wide a search each of them gets.
+ */
+export const EffortSchema = z.enum(["low", "medium", "high"]);
+export type Effort = z.infer<typeof EffortSchema>;
+
 export const AnalysisInputSchema = z.object({
   game_url: z.string().min(1),
   user_mode: UserModeSchema,
   profile_id: z.string().min(1),
+  effort: EffortSchema.default("medium"),
   optional_modules: z.array(z.string()).default([]),
 });
 export type AnalysisInput = z.infer<typeof AnalysisInputSchema>;
@@ -75,17 +83,23 @@ export const ProfileSnapshotSchema = z.object({
   enabled_tools: z.array(z.string()),
   module_versions: z.record(z.string(), z.string()),
   model: z.string(),
+  effort: EffortSchema.default("medium"),
   limits: z.object({
     max_iterations: z.number().int().positive(),
     max_runtime_ms: z.number().int().positive(),
     max_external_calls: z.number().int().positive(),
     max_critic_cycles: z.number().int().min(0).max(2),
     max_cost_usd: z.number().positive(),
+    /** How many results a search tool keeps per call — the main lever on how much a search costs downstream. */
+    max_search_results: z.number().int().positive().default(8),
   }),
   search: z.object({ locale: z.string(), country: z.string(), device: z.string() }),
   fixture_mode: z.boolean().default(false),
 });
 export type ProfileSnapshot = z.infer<typeof ProfileSnapshotSchema>;
+
+export const BreakoutPotentialSchema = z.enum(["LOW", "MODERATE", "HIGH", "VERY HIGH"]);
+export type BreakoutPotential = z.infer<typeof BreakoutPotentialSchema>;
 
 export const ClaimSchema = z.object({
   id: z.string(),
@@ -94,10 +108,10 @@ export const ClaimSchema = z.object({
 });
 
 export const ThesisSchema = z.object({
-  breakout_potential: z.enum(["LOW", "MODERATE", "HIGH", "VERY HIGH"]),
-  confidence: z.enum(["LOW", "MEDIUM", "HIGH"]),
-  recommendation: z.string(),
-  supporting_claims: z.array(ClaimSchema),
+  breakout_potential: BreakoutPotentialSchema,
+  verdict_line: z.string().describe("One sentence, max ~140 characters, stating why this rating and nothing else. Shown next to the rating — it must read on its own."),
+  recommendation: z.string().describe("The single most valuable next move for this user mode. At most 3 sentences, plain prose, no numbered lists."),
+  supporting_claims: z.array(ClaimSchema).describe("Each claim text is one sentence a reader can scan — the evidence carries the detail, not the sentence."),
   risk_claims: z.array(ClaimSchema),
 });
 export type Thesis = z.infer<typeof ThesisSchema>;
@@ -117,11 +131,15 @@ export const ReportSchema = z.object({
   run_id: z.string(),
   game: z.object({
     name: z.string(), place_id: z.string(), universe_id: z.string(),
-    creator: z.string(), observed_at: z.string().datetime(), thumbnail_url: z.string().url().nullable(),
+    creator: z.string(), creator_id: z.string().nullable(), creator_type: z.string().nullable(),
+    url: z.string().url(), creator_url: z.string().url().nullable(),
+    observed_at: z.string().datetime(),
+    icon_url: z.string().url().nullable(), thumbnail_url: z.string().url().nullable(),
+    thumbnails: z.array(z.string().url()).default([]),
   }),
   user_mode: UserModeSchema,
-  verdict: ThesisSchema.pick({ breakout_potential: true, confidence: true, recommendation: true }),
-  initial_verdict: ThesisSchema.pick({ breakout_potential: true, confidence: true }),
+  verdict: ThesisSchema.pick({ breakout_potential: true, verdict_line: true, recommendation: true }),
+  initial_verdict: ThesisSchema.pick({ breakout_potential: true }),
   audit_cards: z.array(z.object({
     module_id: z.string(), label: z.string(), status: ModuleStatusSchema,
     summary: z.string(), evidence_ids: z.array(z.string()), warnings: z.array(z.string()),

@@ -40,7 +40,7 @@ describe("complete deterministic worker loop (demo-replay / fixture mode)", () =
     const critic = await runner.run<unknown, CriticOutput>("critic", { thesis: orchestrated.output, evidence_ids: evidence.map((item) => item.id), source_failures: moduleWarnings["market-intelligence"] ?? [] }, context);
 
     expect(orchestrated.output.breakout_potential).toBe("HIGH");
-    expect(critic.output.recommended_confidence).toBe("LOW");
+    expect(critic.output.recommended_potential).toBe("LOW");
     expect(artifacts).toEqual(["roblox:core", "fixture:market"]);
   });
 });

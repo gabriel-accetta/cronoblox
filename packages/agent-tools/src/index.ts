@@ -12,6 +12,8 @@ export interface ToolRuntime {
   runId: string;
   now: () => Date;
   signal: AbortSignal;
+  /** How many results a search keeps — the run's effort level, pushed down to the tools. */
+  maxSearchResults: number;
   saveRawArtifact: (provider: string, key: string, payload: unknown) => Promise<void>;
   pushEvidence: (item: Evidence) => void;
 }
@@ -19,6 +21,7 @@ export interface ToolRuntime {
 export function toToolRuntime(context: ModuleContext, moduleId: string, evidenceSink: Evidence[]): ToolRuntime {
   return {
     moduleId, runId: context.runId, now: context.now, signal: context.signal,
+    maxSearchResults: context.profile.limits.max_search_results,
     saveRawArtifact: context.saveRawArtifact,
     pushEvidence: (item) => evidenceSink.push(item),
   };
@@ -51,15 +54,42 @@ export function createEvidenceLookupTool(evidence: readonly Evidence[]): AgentTo
   };
 }
 
+/** Argument keys worth showing in the timeline, most identifying first. */
+const ARG_PREVIEW_KEYS = ["query", "focus", "url", "evidence_id", "sort_id", "reason"];
+
+/**
+ * A short, human-readable "what was this call actually about" for the visible trajectory —
+ * without it, ten `roblox_search_peers` rows are indistinguishable to the reader.
+ */
+export function describeToolArgs(args: unknown): string | null {
+  if (!args || typeof args !== "object") return null;
+  const record = args as Record<string, unknown>;
+  const ordered = [...ARG_PREVIEW_KEYS.filter((key) => key in record), ...Object.keys(record).filter((key) => !ARG_PREVIEW_KEYS.includes(key))];
+  const parts: string[] = [];
+  for (const key of ordered) {
+    const value = record[key];
+    const text = typeof value === "string" ? value.trim() : typeof value === "number" || typeof value === "boolean" ? String(value) : "";
+    if (text) parts.push(text);
+    if (parts.length === 2) break;
+  }
+  if (!parts.length) return null;
+  const detail = parts.join(" — ").replace(/\s+/g, " ");
+  return detail.length > 120 ? `${detail.slice(0, 119)}…` : detail;
+}
+
 /** Turns a generic agent-loop event into a run event visible in the run's timeline. */
 export function emitAgentEvent(context: ModuleContext, agentName: string, event: AgentEvent): Promise<void> | void {
   switch (event.type) {
     case "llm_call":
       return event.forced ? context.emit("info", `${agentName}.finalizing`, `${agentName} is wrapping up (budget or turn limit reached)`) : undefined;
-    case "tool_call":
-      return context.emit("info", `${agentName}.tool_call`, `${agentName} called ${event.name}`, { args: event.args });
+    case "tool_call": {
+      const detail = describeToolArgs(event.args);
+      return context.emit("info", `${agentName}.tool_call`, detail ? `${agentName} called ${event.name} — ${detail}` : `${agentName} called ${event.name}`, { tool: event.name, detail, args: event.args });
+    }
     case "tool_error":
-      return context.emit("warning", `${agentName}.tool_error`, `${agentName}'s ${event.name} call failed: ${event.detail}`);
+      return context.emit("warning", `${agentName}.tool_error`, `${agentName}'s ${event.name} call failed: ${event.detail}`, { tool: event.name, detail: `failed — ${event.detail}` });
+    case "tool_refused":
+      return context.emit("warning", `${agentName}.tool_refused`, `${agentName}'s ${event.name} call was refused — ${event.reason}`, { tool: event.name, detail: `refused — ${event.reason}` });
     case "submit":
       return context.emit("info", `${agentName}.submit`, `${agentName} submitted its findings`);
     case "nudge":
@@ -98,14 +128,14 @@ export function createYouTubeSearchTool(runtime: ToolRuntime): AgentTool<{ query
   const youtube = new YouTubeSource();
   return {
     name: "youtube_search",
-    description: "Search YouTube (via yt-dlp, no quota) for videos matching a query. Returns up to 8 results with channel, view count, and description — publish date and like/comment counts are not available from this fast search mode.",
+    description: `Search YouTube (via yt-dlp, no quota) for videos matching a query. Returns up to ${runtime.maxSearchResults} results with channel, view count, and description — publish date and like/comment counts are not available from this fast search mode.`,
     parameters: z.object({ query: z.string().min(1) }),
     externalCalls: 1,
     async execute({ query }) {
       const videos = await youtube.search(query, runtime.signal);
       await runtime.saveRawArtifact("youtube", `search:${query}`, videos);
       const observed = runtime.now().toISOString();
-      const items = videos.slice(0, 8).map((item) => {
+      const items = videos.slice(0, runtime.maxSearchResults).map((item) => {
         const evidence = createEvidence({
           run_id: runtime.runId, module_id: runtime.moduleId, kind: "fact",
           claim: `${item.channelTitle} published "${item.title}" (${item.views == null ? "view count unavailable" : `${item.views.toLocaleString()} views`}).`,

@@ -13,5 +13,7 @@ function getQueue() {
 }
 
 export async function enqueueRun(runId: string) {
-  await getQueue().add("analyze", { runId }, { jobId: runId, attempts: 3, backoff: { type: "exponential", delay: 1000 }, removeOnComplete: 100, removeOnFail: 100 });
+  await getQueue().add("analyze", { runId }, // attempts: 1 — a failed run is almost always a deterministic agent failure, and each retry
+    // re-runs the whole paid pipeline. Retrying doubled the wall-clock and spend of real runs.
+    { jobId: runId, attempts: 1, removeOnComplete: 100, removeOnFail: 100 });
 }

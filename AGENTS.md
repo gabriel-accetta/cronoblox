@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Cronoblox: evidence-linked Roblox game due-diligence tool. User submits a public Roblox game URL; a background worker runs a fixed pipeline (mandatory data audit → LLM orchestrator agent, optionally delegating to sub-agents → optional critic agent) and produces a structured, evidence-cited report. No numeric "breakout probability" is ever shown — only categorical `breakout_potential` (LOW/MODERATE/HIGH/VERY HIGH) and `confidence` (LOW/MEDIUM/HIGH), kept as separate axes. Missing providers degrade coverage (warnings) instead of fabricating data or zeroing metrics.
+Cronoblox: evidence-linked Roblox game due-diligence tool. User submits a public Roblox game URL; a background worker runs a fixed pipeline (mandatory data audit → LLM orchestrator agent, optionally delegating to sub-agents → optional critic agent) and produces a structured, evidence-cited report. No numeric "breakout probability" is ever shown — only a categorical `breakout_potential` (LOW/MODERATE/HIGH/VERY HIGH). The critic may hold or lower that rating after verification, never raise it. Missing providers degrade coverage (warnings) instead of fabricating data or zeroing metrics.
 
 Strict TypeScript pnpm monorepo, modular monolith + one background worker. All packages are `@cronoblox/*`, ESM, `main`/`types` point straight at `src/index.ts` (no build step for libs — consumed as source via workspace deps).
 

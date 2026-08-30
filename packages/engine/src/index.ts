@@ -82,7 +82,7 @@ export async function executeRun(runId: string, hooks: EngineHooks = {}) {
       let cycles = 0;
       const evidenceIds = async () => (await listRunEvidence(runId)).map((item) => item.id);
       critic = await runner.run("critic", { thesis: finalThesis, evidence_ids: await evidenceIds(), source_failures: dedupedFailures() }, context);
-      if (critic.output.recommended_confidence !== finalThesis.confidence) finalThesis = { ...finalThesis, confidence: critic.output.recommended_confidence };
+      if (critic.output.recommended_potential !== finalThesis.breakout_potential) finalThesis = { ...finalThesis, breakout_potential: critic.output.recommended_potential };
       await move("ROUTE", "Resolving critic objections and applying the stopping rule");
       let unresolvedHigh = critic.output.objections.filter((item) => item.severity === "high" && !item.resolved);
       const maxCycles = run.profileSnapshot.limits.max_critic_cycles;
@@ -93,13 +93,13 @@ export async function executeRun(runId: string, hooks: EngineHooks = {}) {
         orchestratorResult = await runner.run<Parameters<typeof orchestratorModule.execute>[0], Thesis>("orchestrator", { game: gameContext, user_mode: run.input.user_mode, baseline, critic_feedback: unresolvedHigh.map((item) => ({ summary: item.summary, resolution_request: item.resolution_request })) }, context);
         finalThesis = orchestratorResult.output;
         critic = await runner.run("critic", { thesis: finalThesis, evidence_ids: await evidenceIds(), source_failures: dedupedFailures() }, context);
-        if (critic.output.recommended_confidence !== finalThesis.confidence) finalThesis = { ...finalThesis, confidence: critic.output.recommended_confidence };
+        if (critic.output.recommended_potential !== finalThesis.breakout_potential) finalThesis = { ...finalThesis, breakout_potential: critic.output.recommended_potential };
         unresolvedHigh = critic.output.objections.filter((item) => item.severity === "high" && !item.resolved);
       }
 
       const stopping = evaluateStoppingRule({ requiredEvidencePresent: core.evidence.length > 0, unresolvedHighSeverity: unresolvedHigh.length, furtherCallExpectedValue: unresolvedHigh.length > 0 && cycles < maxCycles ? "medium" : "low", budgetReached: cycles >= maxCycles });
       if (!stopping.stop) throw new Error("Critic found unsupported material claims that could not be resolved within the run budget.");
-      await addRunEvent(runId, "ROUTE", "info", "critic.resolved", "Critic review reduced confidence where durability or coverage was not established", { objections: critic.output.objections.length, cycles, initial_confidence: initialThesis.confidence, final_confidence: finalThesis.confidence, stopping_reason: stopping.reason });
+      await addRunEvent(runId, "ROUTE", "info", "critic.resolved", finalThesis.breakout_potential === initialThesis.breakout_potential ? "Critic review held the rating — the evidence survived verification" : `Critic review lowered breakout potential from ${initialThesis.breakout_potential} to ${finalThesis.breakout_potential}`, { objections: critic.output.objections.length, cycles, initial_potential: initialThesis.breakout_potential, final_potential: finalThesis.breakout_potential, stopping_reason: stopping.reason });
     } else {
       await move("SYNTHESIZE", "Thesis formed — critic disabled by the immutable run profile");
     }
@@ -110,7 +110,7 @@ export async function executeRun(runId: string, hooks: EngineHooks = {}) {
     const report = buildReport({ runId, core: core.output, userMode: run.input.user_mode, initial: initialThesis, final: finalThesis, evidence: allEvidence, moduleRows, sourceFailures: dedupedFailures(), fixture: run.profileSnapshot.fixture_mode, critic: critic?.output ?? null, runtimeMs: Date.now() - started, cost: budget.snapshot().costUsd });
     assertReportEvidence(report, allEvidence); await saveReport(runId, report);
     await updateRunState(runId, "COMPLETED", { completed: true });
-    await addRunEvent(runId, "COMPLETED", "info", "run.completed", "Investigation complete — the report is ready", { potential: report.verdict.breakout_potential, confidence: report.verdict.confidence });
+    await addRunEvent(runId, "COMPLETED", "info", "run.completed", "Investigation complete — the report is ready", { potential: report.verdict.breakout_potential });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown investigation error";
     await updateRunState(runId, "FAILED", { error: message, completed: true });
@@ -121,7 +121,7 @@ export async function executeRun(runId: string, hooks: EngineHooks = {}) {
 
 function buildReport(input: { runId: string; core: RobloxDataOutput; userMode: "developer" | "investor"; initial: Thesis; final: Thesis; evidence: Evidence[]; moduleRows: RunModuleRow[]; sourceFailures: string[]; fixture: boolean; critic: { objections: Array<{ id: string; severity: "low" | "medium" | "high"; summary: string; affected_claim_ids: string[]; evidence_ids: string[]; resolution_request: string; resolved: boolean }>; summary: string } | null; runtimeMs: number; cost: number }): Report {
   const byModule = (id: string) => input.evidence.filter((item) => item.module_id === id).map((item) => item.id);
-  const changed = input.initial.breakout_potential !== input.final.breakout_potential || input.initial.confidence !== input.final.confidence;
+  const changed = input.initial.breakout_potential !== input.final.breakout_potential;
   const evidenceIds = [...new Set([...input.final.supporting_claims, ...input.final.risk_claims].flatMap((claim) => claim.evidence_ids))];
 
   const auditCards = AUDIT_CARD_DEFS.map((def) => {
@@ -131,8 +131,15 @@ function buildReport(input: { runId: string; core: RobloxDataOutput; userMode: "
   });
 
   return ReportSchema.parse({
-    run_id: input.runId, game: { name: input.core.name, place_id: input.core.place_id, universe_id: input.core.universe_id, creator: input.core.creator, observed_at: new Date().toISOString(), thumbnail_url: null }, user_mode: input.userMode,
-    verdict: { breakout_potential: input.final.breakout_potential, confidence: input.final.confidence, recommendation: input.final.recommendation }, initial_verdict: { breakout_potential: input.initial.breakout_potential, confidence: input.initial.confidence },
+    run_id: input.runId,
+    game: {
+      name: input.core.name, place_id: input.core.place_id, universe_id: input.core.universe_id,
+      creator: input.core.creator, creator_id: input.core.creator_id, creator_type: input.core.creator_type,
+      url: input.core.url, creator_url: input.core.creator_url, observed_at: new Date().toISOString(),
+      icon_url: input.core.icon_url, thumbnail_url: input.core.thumbnails[0] ?? null, thumbnails: input.core.thumbnails,
+    },
+    user_mode: input.userMode,
+    verdict: { breakout_potential: input.final.breakout_potential, verdict_line: input.final.verdict_line, recommendation: input.final.recommendation }, initial_verdict: { breakout_potential: input.initial.breakout_potential },
     audit_cards: auditCards,
     supporting_claims: input.final.supporting_claims, risk_claims: input.final.risk_claims,
     critic: { changed_assessment: changed, summary: input.critic?.summary ?? "No critic was enabled for this run.", objections: input.critic?.objections ?? [] },

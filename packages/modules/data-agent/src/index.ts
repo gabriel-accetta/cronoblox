@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createOpenRouterClient, runAgentLoop, withIterationCap } from "@cronoblox/agent-core";
+import { agentCallAllowance, createOpenRouterClient, runAgentLoop, withIterationCap } from "@cronoblox/agent-core";
 import { createRobloxChartGamesTool, createRobloxListChartsTool, createRobloxPeerSearchTool, emitAgentEvent, toToolRuntime, toolAvailability } from "@cronoblox/agent-tools";
 import type { Evidence } from "@cronoblox/contracts";
 import type { CronobloxModule } from "@cronoblox/module-sdk";
@@ -15,6 +15,7 @@ export const DataAgentOutputSchema = z.object({
 });
 export type DataAgentOutput = z.infer<typeof DataAgentOutputSchema>;
 
+const MODULE_LABEL = "The data agent";
 const SYSTEM = `You are the Cronoblox Data Agent, a sub-agent invoked by the research orchestrator to go deeper on Roblox platform data than the mandatory core audit already covers.
 You have tools to search Roblox's catalog and read its current discovery/trending charts. Use them only if they would meaningfully inform breakout-potential analysis for the given focus — you decide how many calls, if any, are worth making. When done, call submit_data_findings with a short summary and any genuinely comparable games you found (do not repeat games already implied by the audited game's own name unless you found new confirming context). Never invent a game, statistic, or URL — only report what your tool calls actually returned.`;
 
@@ -37,16 +38,16 @@ export const dataAgentModule: CronobloxModule<z.infer<typeof DataAgentInputSchem
     }
 
     const client = createOpenRouterClient();
-    const { result, toolCallCount } = await runAgentLoop({
+    const { result, toolCallCount, degraded } = await runAgentLoop({
       client, model: context.profile.model, system: SYSTEM,
-      userInput: { focus: input.focus, game: input.game },
+      userInput: { focus: input.focus, game: input.game, research_effort: context.profile.effort, search_call_allowance: agentCallAllowance(context.profile, "research") },
       tools,
       submit: { name: "submit_data_findings", description: "Submit your final findings for this delegation.", schema: DataAgentOutputSchema },
-      budget: withIterationCap(context.budget, 4),
+      budget: withIterationCap(context.budget, 4, agentCallAllowance(context.profile, "research")),
       signal: context.signal,
       onEvent: (event) => emitAgentEvent(context, "data-agent", event),
     });
 
-    return { status: "completed", output: result, evidence: evidenceSink, suggested_next_steps: [], warnings: [], metrics: { duration_ms: 0, external_calls: toolCallCount, estimated_cost_usd: null } };
+    return { status: degraded ? "degraded" : "completed", output: result, evidence: evidenceSink, suggested_next_steps: [], warnings: degraded ? [`${MODULE_LABEL} could not return a structured result through tool calling and was salvaged from a plain-text reply — treat its findings as weaker evidence.`] : [], metrics: { duration_ms: 0, external_calls: toolCallCount, estimated_cost_usd: null } };
   },
 };

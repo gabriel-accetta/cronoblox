@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { AgentTool } from "@cronoblox/agent-core";
-import { createOpenRouterClient, runAgentLoop, withIterationCap } from "@cronoblox/agent-core";
+import { agentCallAllowance, createOpenRouterClient, runAgentLoop, withIterationCap } from "@cronoblox/agent-core";
 import { emitAgentEvent, keepKnownIds } from "@cronoblox/agent-tools";
 import { ThesisSchema, UserModeSchema, type Thesis } from "@cronoblox/contracts";
 import { FixtureAnalyst } from "@cronoblox/llm";
@@ -23,7 +23,8 @@ export const OrchestratorOutputSchema = ThesisSchema;
 const SYSTEM = `You are the Cronoblox Research Orchestrator. You are given an audited Roblox game's core platform data (already resolved, treat it as ground truth) and must produce a breakout-potential thesis for the given user mode (developer or investor).
 You may delegate to two sub-agents, each callable zero or more times with a different focus each time: call_data_agent (deeper Roblox platform research: comparable games, trending charts) and call_socials_agent (web/YouTube research on real-world attention and creator diversity). Only delegate if you genuinely expect it to change your assessment — delegation costs budget. If the core data alone is already conclusive, delegate zero times and submit directly.
 Every claim's evidence_ids must be real ids: either from core_evidence in your input, or from the "evidence" array returned inside a call_data_agent/call_socials_agent tool result. Never invent an id, a statistic, or a source. A current snapshot is not historical growth data — say so rather than treating missing history as negative.
-If critic_feedback is present, this is a revision pass: address the specific objections (gather more evidence via delegation if that would resolve one, or adjust confidence/claims) rather than repeating the same thesis.
+If critic_feedback is present, this is a revision pass: address the specific objections (gather more evidence via delegation if that would resolve one, or adjust the rating/claims) rather than repeating the same thesis.
+Write for a reader who is scanning: verdict_line is one sentence, recommendation is at most three sentences of prose (never a numbered list), and each claim is a single scannable sentence. Depth belongs in the evidence records, not in longer paragraphs.
 Call submit_thesis when you are done.`;
 
 interface DelegateResult { status: string; output: unknown; warnings: string[]; evidence: Array<{ id: string; claim: string }> }
@@ -64,7 +65,7 @@ export const orchestratorModule: CronobloxModule<z.infer<typeof OrchestratorInpu
     }
 
     const client = createOpenRouterClient();
-    const { result } = await runAgentLoop({
+    const { result, degraded } = await runAgentLoop({
       client, model: context.profile.model, system: SYSTEM,
       userInput: {
         game: input.game, user_mode: input.user_mode,
@@ -73,7 +74,7 @@ export const orchestratorModule: CronobloxModule<z.infer<typeof OrchestratorInpu
       },
       tools,
       submit: { name: "submit_thesis", description: "Submit your final breakout-potential thesis.", schema: ThesisSchema },
-      budget: withIterationCap(context.budget, context.profile.limits.max_iterations),
+      budget: withIterationCap(context.budget, context.profile.limits.max_iterations, agentCallAllowance(context.profile, "delegate")),
       signal: context.signal,
       onEvent: (event) => emitAgentEvent(context, "orchestrator", event),
     });
@@ -86,6 +87,6 @@ export const orchestratorModule: CronobloxModule<z.infer<typeof OrchestratorInpu
       risk_claims: result.risk_claims.map((claim) => ({ ...claim, evidence_ids: keepKnownIds(claim.evidence_ids, knownIds) })),
     };
 
-    return { status: "completed", output: sanitized, evidence: [], suggested_next_steps: [], warnings: [], metrics: { duration_ms: 0, external_calls: 0, estimated_cost_usd: null } };
+    return { status: degraded ? "degraded" : "completed", output: sanitized, evidence: [], suggested_next_steps: [], warnings: degraded ? ["The orchestrator could not return a structured thesis through tool calling and was salvaged from a plain-text reply."] : [], metrics: { duration_ms: 0, external_calls: 0, estimated_cost_usd: null } };
   },
 };

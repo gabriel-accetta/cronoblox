@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@cronoblox/agent-core": "workspace:*",
+    "@cronoblox/agent-tools": "workspace:*",
     "@cronoblox/config": "workspace:*",
     "@cronoblox/contracts": "workspace:*",
     "@cronoblox/engine": "workspace:*",

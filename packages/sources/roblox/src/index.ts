@@ -47,9 +47,11 @@ const gameSchema = z.object({ data: z.array(z.object({
 })) });
 const votesSchema = z.object({ data: z.array(z.object({ id: z.number(), upVotes: z.number().nullish(), downVotes: z.number().nullish() })) });
 const recommendationSchema = z.object({ games: z.array(z.object({ universeId: z.number().optional(), id: z.number().optional(), name: z.string().optional(), rootPlaceId: z.number().optional(), playerCount: z.number().optional() })).default([]) }).passthrough();
+const iconSchema = z.object({ data: z.array(z.object({ targetId: z.number(), state: z.string(), imageUrl: z.string().nullish() })).default([]) });
+const gameThumbnailSchema = z.object({ data: z.array(z.object({ universeId: z.number(), error: z.unknown().nullish(), thumbnails: z.array(z.object({ targetId: z.number(), state: z.string(), imageUrl: z.string().nullish() })).default([]) })).default([]) });
 const badgesSchema = z.object({ data: z.array(z.object({ id: z.number(), name: z.string(), description: z.string().nullish(), statistics: z.object({ awardedCount: z.number().optional(), pastDayAwardedCount: z.number().optional() }).partial().optional() })).default([]) });
 
-export type RobloxCore = z.infer<typeof gameSchema>["data"][number] & { placeId: string; universeId: string; votes: z.infer<typeof votesSchema>["data"][number] | null; badges: z.infer<typeof badgesSchema>["data"]; recommendations: z.infer<typeof recommendationSchema>["games"] };
+export type RobloxCore = z.infer<typeof gameSchema>["data"][number] & { placeId: string; universeId: string; votes: z.infer<typeof votesSchema>["data"][number] | null; badges: z.infer<typeof badgesSchema>["data"]; recommendations: z.infer<typeof recommendationSchema>["games"]; iconUrl: string | null; thumbnails: string[] };
 
 export class RobloxSource {
   async audit(input: string, signal: AbortSignal): Promise<{ core: RobloxCore; raw: Record<string, unknown>; calls: number; warnings: string[] }> {
@@ -67,6 +69,8 @@ export class RobloxSource {
       fetchJson(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`, votesSchema, signal),
       fetchJson(`https://badges.roblox.com/v1/universes/${universeId}/badges?limit=100&sortOrder=Desc`, badgesSchema, signal),
       fetchJson(`https://games.roblox.com/v1/games/recommendations/game/${universeId}?maxRows=12`, recommendationSchema, signal),
+      fetchJson(`https://thumbnails.roblox.com/v1/games/icons?universeIds=${universeId}&size=512x512&format=Png&isCircular=false`, iconSchema, signal),
+      fetchJson(`https://thumbnails.roblox.com/v1/games/multiget/thumbnails?universeIds=${universeId}&size=768x432&format=Png&countPerUniverse=6&defaults=true`, gameThumbnailSchema, signal),
     ]);
     const votes = settled[0].status === "fulfilled" ? settled[0].value.data[0] ?? null : null;
     const badges = settled[1].status === "fulfilled" ? settled[1].value.data ?? [] : [];
@@ -74,7 +78,14 @@ export class RobloxSource {
     if (settled[0].status === "rejected") warnings.push("Vote data unavailable");
     if (settled[1].status === "rejected") warnings.push("Badge activity unavailable");
     if (settled[2].status === "rejected") warnings.push("Recommended peers unavailable");
-    return { core: { ...game, placeId, universeId, votes, badges, recommendations }, raw: { identity, game: coreResult, votes: settled[0], badges: settled[1], recommendations: settled[2] }, calls: 5, warnings };
+    const ready = (state: string | undefined, url: string | null | undefined) => (state === "Completed" && url ? url : null);
+    const iconResult = settled[3]; const shotResult = settled[4];
+    const icon = iconResult?.status === "fulfilled" ? (iconResult.value.data ?? [])[0] : null;
+    const iconUrl = ready(icon?.state, icon?.imageUrl);
+    const thumbnails = ((shotResult?.status === "fulfilled" ? (shotResult.value.data ?? [])[0]?.thumbnails : null) ?? [])
+      .map((item) => ready(item.state, item.imageUrl)).filter((item): item is string => item !== null);
+    if (iconResult?.status === "rejected" && shotResult?.status === "rejected") warnings.push("Game imagery unavailable");
+    return { core: { ...game, placeId, universeId, votes, badges, recommendations, iconUrl, thumbnails }, raw: { identity, game: coreResult, votes: settled[0], badges: settled[1], recommendations: settled[2], icon: iconResult, thumbnails: shotResult }, calls: 7, warnings };
   }
 
   async searchPeers(query: string, signal: AbortSignal) {

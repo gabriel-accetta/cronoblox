@@ -14,6 +14,9 @@ importers:
       '@cronoblox/agent-core':
         specifier: workspace:*
         version: link:packages/agent-core
+      '@cronoblox/agent-tools':
+        specifier: workspace:*
+        version: link:packages/agent-tools
       '@cronoblox/config':
         specifier: workspace:*
         version: link:packages/config
@@ -184,6 +187,10 @@ importers:
       '@cronoblox/contracts':
         specifier: workspace:*
         version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: 20.17.30
+        version: 20.17.30
 
   packages/contracts:
     dependencies:

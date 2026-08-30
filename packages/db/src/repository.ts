@@ -13,7 +13,9 @@ export async function createRun(input: AnalysisInput, profile: ProfileSnapshot) 
 
 export async function updateRunState(runId: string, state: RunState, patch: { gameName?: string; placeId?: string; universeId?: string; error?: string; started?: boolean; completed?: boolean } = {}) {
   await db.update(runs).set({
-    state, gameName: patch.gameName, placeId: patch.placeId, universeId: patch.universeId, error: patch.error,
+    state, gameName: patch.gameName, placeId: patch.placeId, universeId: patch.universeId,
+    // Explicitly cleared on the way back to a healthy state, so a retry cannot leave a stale failure behind.
+    error: patch.error ?? (state === "COMPLETED" || state === "COLLECT_CORE" ? null : undefined),
     startedAt: patch.started ? new Date() : undefined, completedAt: patch.completed ? new Date() : undefined, updatedAt: new Date(),
   }).where(eq(runs.id, runId));
 }

@@ -2,7 +2,7 @@
 
 Cronoblox is an evidence-linked Roblox game due-diligence workflow. A user submits one public Roblox game URL, the worker runs the Roblox Data Audit, optional research gathers market and social context, the analyst forms an initial thesis, the critic challenges it, and the web app renders the structured report.
 
-The product never displays a numeric breakout probability. Breakout potential and confidence are separate judgments. Missing providers degrade coverage instead of becoming zeroes or fabricated evidence.
+The product never displays a numeric breakout probability — only a categorical breakout potential, which the critic can lower but never raise. Missing providers degrade coverage instead of becoming zeroes or fabricated evidence.
 
 ## Architecture
 

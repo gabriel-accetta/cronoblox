@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createOpenRouterClient, runAgentLoop, withIterationCap, type AgentTool } from "@cronoblox/agent-core";
+import { agentCallAllowance, createOpenRouterClient, runAgentLoop, withIterationCap, type AgentTool } from "@cronoblox/agent-core";
 import { createFetchPageTool, createYouTubeSearchTool, emitAgentEvent, toToolRuntime, toolAvailability } from "@cronoblox/agent-tools";
 import { createEvidence } from "@cronoblox/evidence";
 import type { Evidence } from "@cronoblox/contracts";
@@ -22,8 +22,9 @@ export const MarketOutputSchema = MarketSubmitSchema.extend({
 });
 export type MarketOutput = z.infer<typeof MarketOutputSchema>;
 
+const MODULE_LABEL = "The socials agent";
 const SYSTEM = `You are the Cronoblox Socials Agent, a sub-agent invoked by the research orchestrator to investigate a Roblox game's real-world attention: YouTube creator activity and creator diversity.
-You have youtube_search and fetch_page tools. Decide how many searches are worth running and which results are worth opening with fetch_page to verify — you have full freedom here, but every search and fetch costs budget, so don't repeat a query that already answered your question. When you have enough signal (or tools are unavailable/exhausted), call submit_socials_findings. Only report findings backed by what your tool calls actually returned — never invent a source, statistic, or URL. A short observation window is not evidence against the game; say so explicitly rather than treating absence of data as a negative signal. There is no general web-search tool in this run — YouTube coverage is the only live social signal available, so say so plainly rather than implying broader web coverage was checked.`;
+You have youtube_search and fetch_page tools. Decide how many searches are worth running and which results are worth opening with fetch_page to verify — but your input states a research_effort and a search_call_allowance, and you must work inside it. At low effort, run one or two well-chosen searches and conclude; do not sweep the topic. Repeating a query that already answered your question is refused, not free. When you have enough signal (or tools are unavailable/exhausted), call submit_socials_findings. Only report findings backed by what your tool calls actually returned — never invent a source, statistic, or URL. A short observation window is not evidence against the game; say so explicitly rather than treating absence of data as a negative signal. There is no general web-search tool in this run — YouTube coverage is the only live social signal available, so say so plainly rather than implying broader web coverage was checked.`;
 
 const fixture = { creator_count: 6, recent_video_count: 5 };
 
@@ -58,12 +59,12 @@ export const marketIntelligenceModule: CronobloxModule<z.infer<typeof MarketInpu
     }
 
     const client = createOpenRouterClient();
-    const { result, toolCallCount } = await runAgentLoop({
+    const { result, toolCallCount, degraded } = await runAgentLoop({
       client, model: context.profile.model, system: SYSTEM,
-      userInput: { focus: input.focus, game: input.game },
+      userInput: { focus: input.focus, game: input.game, research_effort: context.profile.effort, search_call_allowance: agentCallAllowance(context.profile, "research") },
       tools,
       submit: { name: "submit_socials_findings", description: "Submit your final findings for this delegation.", schema: MarketSubmitSchema },
-      budget: withIterationCap(context.budget, 4),
+      budget: withIterationCap(context.budget, 4, agentCallAllowance(context.profile, "research")),
       signal: context.signal,
       onEvent: (event) => emitAgentEvent(context, "market-intelligence", event),
     });

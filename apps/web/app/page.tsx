@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, ChevronDown, CircleDot, Clock3, LockKeyhole, Radar, ShieldCheck, Sparkles } from "lucide-react";
-import type { RunSummary, UserMode } from "@cronoblox/contracts";
+import type { Effort, RunSummary, UserMode } from "@cronoblox/contracts";
 
 const audits = [
   { icon: CircleDot, label: "Roblox data", detail: "Identity, live engagement, votes & activity", required: true },
@@ -12,11 +12,18 @@ const audits = [
   { icon: ShieldCheck, label: "Critic", detail: "Challenges the thesis before you see it", required: false },
 ];
 
+const efforts: Array<{ id: Effort; label: string; detail: string }> = [
+  { id: "low", label: "LOW", detail: "Fewest searches, no critic revision" },
+  { id: "medium", label: "MEDIUM", detail: "Balanced research and one revision" },
+  { id: "high", label: "HIGH", detail: "Widest research, two revisions" },
+];
+
 export default function HomePage() {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [mode, setMode] = useState<UserMode>("developer");
   const [profile, setProfile] = useState("hackathon-full");
+  const [effort, setEffort] = useState<Effort>("medium");
   const [advanced, setAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +35,7 @@ export default function HomePage() {
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setSubmitting(true); setError(null);
     try {
-      const response = await fetch("/api/runs", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ game_url: url, user_mode: mode, profile_id: profile, optional_modules: selectedModules.filter((item) => item !== "roblox-data") }) });
+      const response = await fetch("/api/runs", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ game_url: url, user_mode: mode, profile_id: profile, effort, optional_modules: selectedModules.filter((item) => item !== "roblox-data") }) });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error ?? "Could not start the investigation");
       router.push(`/runs/${body.run_id}`);
@@ -40,7 +47,6 @@ export default function HomePage() {
       <SiteHeader />
       <section className="hero-grid">
         <div className="hero-copy">
-          <div className="eyebrow">AGENTIC GAME INTELLIGENCE</div>
           <h1>Find the signal<br />before the <em>hype.</em></h1>
           <p className="lede">Cronoblox investigates one Roblox game, tests the breakout thesis, and shows every piece of evidence behind the call.</p>
           <div className="promise-row"><span><CheckCircle2 /> No fake probability</span><span><CheckCircle2 /> Every claim sourced</span></div>
@@ -61,6 +67,10 @@ export default function HomePage() {
             <option value="baseline">Baseline — direct assessment only</option>
             <option value="demo-replay">Demo replay — cached fixture</option>
           </select>
+          <label htmlFor="effort">RESEARCH EFFORT</label>
+          <div className="choice-row effort-row" role="radiogroup" aria-label="Research effort" id="effort">
+            {efforts.map((option) => <button key={option.id} className={`choice ${effort === option.id ? "active" : ""}`} type="button" role="radio" aria-checked={effort === option.id} onClick={() => setEffort(option.id)}><span>{option.label}</span><small>{option.detail}</small></button>)}
+          </div>
           <button className="advanced-toggle" type="button" onClick={() => setAdvanced(!advanced)} aria-expanded={advanced}>ADVANCED MODULES <ChevronDown className={advanced ? "rotated" : ""} /></button>
           {advanced && <div className="module-list">{audits.map((audit) => <div key={audit.label}><span>{audit.required ? <LockKeyhole /> : <span className={`toggle-dot ${selectedModules.length > 1 ? "on" : ""}`} />} {audit.label}</span><small>{audit.required ? "Required" : selectedModules.length > 1 ? "Profile controlled" : "Disabled"}</small></div>)}</div>}
           {error && <p className="form-error" role="alert">{error}</p>}
@@ -71,7 +81,7 @@ export default function HomePage() {
 
       <section className="audit-strip" aria-label="Investigation modules">
         <div className="strip-heading"><span>THE INVESTIGATION</span><small>Every audit is visible. Every conclusion is challengeable.</small></div>
-        <div className="audit-grid">{audits.map(({ icon: Icon, label, detail }, index) => <article key={label} className="audit-item"><div className="audit-number">0{index + 1}</div><Icon /><h2>{label}</h2><p>{detail}</p></article>)}</div>
+        <div className="audit-grid">{audits.map(({ icon: Icon, label, detail }) => <article key={label} className="audit-item"><Icon /><h2>{label}</h2><p>{detail}</p></article>)}</div>
       </section>
 
       <section className="recent-section">
