@@ -1,0 +1,8 @@
+{
+  "name": "@cronoblox/module-orchestrator", "version": "0.1.0", "private": true, "type": "module", "main": "src/index.ts", "types": "src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@cronoblox/agent-core": "workspace:*", "@cronoblox/agent-tools": "workspace:*", "@cronoblox/contracts": "workspace:*",
+    "@cronoblox/llm": "workspace:*", "@cronoblox/module-sdk": "workspace:*", "zod": "3.25.76"
+  }
+}

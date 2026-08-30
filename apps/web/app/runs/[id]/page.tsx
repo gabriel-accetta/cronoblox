@@ -36,7 +36,7 @@ function ProgressView({ detail, onRefresh }: { detail: RunDetail; onRefresh: () 
   </div>;
 }
 
-const stateCopy: Record<string, string> = { COLLECT_CORE: "Identity + platform signals", PLAN: "Highest-value question", EXECUTE: "Research providers", RECORD: "Evidence validation", SYNTHESIZE: "Initial thesis", CRITIQUE: "Falsification review", ROUTE: "Objection resolution", FINALIZE: "Structured report" };
+const stateCopy: Record<string, string> = { COLLECT_CORE: "Identity + platform signals", PLAN: "Orchestrator plans its research", EXECUTE: "Orchestrator delegates to sub-agents", RECORD: "Evidence validation", SYNTHESIZE: "Thesis formed", CRITIQUE: "Falsification review", ROUTE: "Objection resolution", FINALIZE: "Structured report" };
 
 function ReportView({ report }: { report: Report }) {
   const [drawer, setDrawer] = useState<string[] | null>(null);

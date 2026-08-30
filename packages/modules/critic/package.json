@@ -1,4 +1,4 @@
 {
   "name": "@cronoblox/module-critic", "version": "0.1.0", "private": true, "type": "module", "main": "src/index.ts", "types": "src/index.ts", "scripts": { "typecheck": "tsc --noEmit" },
-  "dependencies": { "@cronoblox/contracts": "workspace:*", "@cronoblox/module-sdk": "workspace:*", "zod": "3.25.76" }
+  "dependencies": { "@cronoblox/agent-core": "workspace:*", "@cronoblox/agent-tools": "workspace:*", "@cronoblox/contracts": "workspace:*", "@cronoblox/module-sdk": "workspace:*", "zod": "3.25.76" }
 }

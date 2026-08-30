@@ -1,6 +1,6 @@
 # Cronoblox
 
-Cronoblox is an evidence-linked Roblox game due-diligence workflow. A user submits one public Roblox game URL, the worker always runs the Roblox Data Audit first, optional research gathers market and social context, the analyst forms an initial thesis, the critic challenges it, and the web app renders the structured report.
+Cronoblox is an evidence-linked Roblox game due-diligence workflow. A user submits one public Roblox game URL, the worker runs the Roblox Data Audit, optional research gathers market and social context, the analyst forms an initial thesis, the critic challenges it, and the web app renders the structured report.
 
 The product never displays a numeric breakout probability. Breakout potential and confidence are separate judgments. Missing providers degrade coverage instead of becoming zeroes or fabricated evidence.
 
@@ -15,7 +15,7 @@ This is a strict TypeScript pnpm monorepo and a modular monolith with one backgr
 - `packages/module-sdk`: explicit module registry and validated runner
 - `packages/evidence`: append-only evidence helpers
 - `packages/modules/*`: Roblox data, market intelligence, and critic modules
-- `packages/sources/*`: Roblox, Brave, and YouTube provider adapters
+- `packages/sources/*`: Roblox, YouTube (via yt-dlp), and generic webpage-fetch provider adapters
 - `packages/llm`: OpenRouter structured-output adapter plus visibly labeled deterministic fixture adapter
 - `packages/engine`: persisted, code-controlled state machine
 - `packages/evaluation`: frozen cases, human rubric, JSON/Markdown export
@@ -34,7 +34,7 @@ pnpm db:migrate
 pnpm db:seed
 ```
 
-Add `OPENROUTER_API_KEY` for live synthesis. The default `OPENROUTER_MODEL` is `openai/gpt-5-mini`; any compatible OpenRouter model slug with structured-output support can be configured instead. `BRAVE_SEARCH_API_KEY` and `YOUTUBE_API_KEY` are optional; missing keys appear as source failures and lower confidence. No secrets are sent to the browser.
+Add `OPENROUTER_API_KEY` for live synthesis. The default `OPENROUTER_MODEL` is `deepseek/deepseek-v4-flash-0731`; any compatible OpenRouter model slug with tool-calling support can be configured instead (the whole pipeline is now a real tool-calling agent loop, not a single structured-output call). There is no general web-search tool — social/creator coverage comes from YouTube only (no key needed; it runs through the `yt-dlp` CLI, which must be installed on the machine running the worker — `pip install -U yt-dlp`; override the binary path with `YT_DLP_PATH`). No secrets are sent to the browser.
 
 Start the web app and worker in separate terminals:
 

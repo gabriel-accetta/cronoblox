@@ -1,0 +1,9 @@
+{
+  "name": "@cronoblox/agent-tools", "version": "0.1.0", "private": true, "type": "module", "main": "src/index.ts", "types": "src/index.ts",
+  "scripts": { "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@cronoblox/agent-core": "workspace:*", "@cronoblox/contracts": "workspace:*", "@cronoblox/evidence": "workspace:*", "@cronoblox/module-sdk": "workspace:*",
+    "@cronoblox/source-roblox": "workspace:*", "@cronoblox/source-webpage": "workspace:*", "@cronoblox/source-youtube": "workspace:*",
+    "zod": "3.25.76"
+  }
+}

@@ -58,6 +58,14 @@ export async function listRunEvidence(runId: string): Promise<Evidence[]> {
   return rows.map((row) => EvidenceSchema.parse(row.record));
 }
 
+export interface RunModuleRow { moduleId: string; status: "completed" | "degraded" | "skipped" | "failed"; output: unknown; warnings: string[] }
+
+/** The latest persisted result per module id for a run. A module the orchestrator never delegated to simply has no row. */
+export async function listRunModules(runId: string): Promise<RunModuleRow[]> {
+  const rows = await db.select({ moduleId: runModules.moduleId, status: runModules.status, output: runModules.output, warnings: runModules.warnings }).from(runModules).where(eq(runModules.runId, runId));
+  return rows;
+}
+
 export async function getReport(runId: string): Promise<Report | null> {
   const [row] = await db.select({ report: reports.report }).from(reports).where(eq(reports.runId, runId)).limit(1);
   return row ? ReportSchema.parse(row.report) : null;

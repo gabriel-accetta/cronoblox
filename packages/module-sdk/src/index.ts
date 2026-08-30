@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { RunBudget } from "@cronoblox/agent-core";
 import type { Evidence, ModuleStatus, ProfileSnapshot } from "@cronoblox/contracts";
 
 export interface ModuleManifest {
@@ -19,6 +20,10 @@ export interface ModuleContext {
   getEvidence(): Promise<Evidence[]>;
   saveRawArtifact(provider: string, key: string, payload: unknown): Promise<void>;
   emit(level: "info" | "warning" | "error", type: string, message: string, data?: Record<string, unknown>): Promise<void>;
+  /** Run-wide external-call/cost budget, shared across every agent loop in the run. */
+  budget: RunBudget;
+  /** Lets an agentic module (e.g. the orchestrator) invoke another registered module as a sub-call. */
+  runModule<TInput, TOutput>(id: string, input: TInput): Promise<ModuleResult<TOutput>>;
 }
 
 export interface ModuleResult<TOutput> {

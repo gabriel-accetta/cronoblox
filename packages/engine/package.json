@@ -1,7 +1,7 @@
 {
   "name": "@cronoblox/engine", "version": "0.1.0", "private": true, "type": "module", "main": "src/index.ts", "types": "src/index.ts", "scripts": { "typecheck": "tsc --noEmit" },
   "dependencies": {
-    "@cronoblox/contracts": "workspace:*", "@cronoblox/db": "workspace:*", "@cronoblox/evidence": "workspace:*", "@cronoblox/llm": "workspace:*", "@cronoblox/module-sdk": "workspace:*",
-    "@cronoblox/module-critic": "workspace:*", "@cronoblox/module-market-intelligence": "workspace:*", "@cronoblox/module-roblox-data": "workspace:*"
+    "@cronoblox/agent-core": "workspace:*", "@cronoblox/contracts": "workspace:*", "@cronoblox/db": "workspace:*", "@cronoblox/evidence": "workspace:*", "@cronoblox/module-sdk": "workspace:*",
+    "@cronoblox/module-critic": "workspace:*", "@cronoblox/module-data-agent": "workspace:*", "@cronoblox/module-market-intelligence": "workspace:*", "@cronoblox/module-orchestrator": "workspace:*", "@cronoblox/module-roblox-data": "workspace:*"
   }
 }
