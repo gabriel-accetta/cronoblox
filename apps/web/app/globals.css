@@ -31,6 +31,10 @@
 
   --step: 8px;
   --radius: 3px;
+
+  --scroll-track: rgba(150, 175, 225, 0.05);
+  --scroll-thumb: rgba(150, 175, 225, 0.22);
+  --scroll-thumb-hover: rgba(122, 171, 255, 0.5);
 }
 
 [data-potential="low"] { --tone: var(--pot-low); }
@@ -46,11 +50,26 @@ button { color: inherit; }
 :focus-visible { outline: 2px solid var(--accent-bright); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
+/* ----------------------------------------------------------- scrollbars */
+/* The default light scrollbar reads as a seam against this dark shell, so every scroll
+   surface — page, trajectory log, evidence drawer, media strip — gets the same treatment. */
+* { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: var(--scroll-track); }
+*::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border: 2px solid transparent; background-clip: padding-box; border-radius: 999px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--scroll-thumb-hover); background-clip: padding-box; }
+*::-webkit-scrollbar-corner { background: transparent; }
+/* Firefox paints the page scrollbar from the root element only. */
+html { scrollbar-color: var(--scroll-thumb) var(--ink); }
+
 /* --------------------------------------------------------------- shell */
 .app-shell { min-height: 100vh; background: radial-gradient(circle at 74% 8%, rgba(77,141,255,.13), transparent 30%), linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px); background-size: auto, 64px 64px, 64px 64px; }
 .topbar { height: 68px; padding: 0 clamp(20px,5vw,72px); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); }
-.brand { display: flex; gap: 11px; align-items: center; color: inherit; text-decoration: none; font: 600 13px var(--font-mono), monospace; letter-spacing: .17em; }
-.brand-mark { width: 27px; height: 27px; display: grid; place-items: center; color: #05101f; background: var(--accent); border-radius: var(--radius); font-weight: 700; font-size: 14px; }
+.brand { display: flex; align-items: center; color: inherit; text-decoration: none; }
+/* The wordmark already carries the icon and the letterforms, so it replaces the old tile + text pair.
+   The file is trimmed to its ink, so this height is the mark's real height. */
+.brand-logo { height: 22px; width: auto; display: block; }
+@media (max-width: 560px) { .brand-logo { height: 19px; } }
 .status-chip { font: 500 10px var(--font-mono), monospace; letter-spacing: .13em; color: var(--muted); display: flex; align-items: center; gap: 9px; }
 .status-chip span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
 

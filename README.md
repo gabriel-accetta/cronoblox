@@ -56,12 +56,12 @@ pnpm build           # production Next.js build + worker checks
 pnpm evaluate        # emit unscored JSON and Markdown evaluation templates
 ```
 
-Evaluation output is written to `evaluation-output/`. Human-required rubric fields intentionally remain unscored. Run baseline and `hackathon-full` against the same frozen cases, preserve failures, then enter review scores. The baseline receives only the Module 2 current-data bundle and one direct assessment call.
+Evaluation output is written to `evaluation-output/`. Human-required rubric fields intentionally remain unscored. Run baseline and `full` against the same frozen cases, preserve failures, then enter review scores. The baseline receives only the Module 2 current-data bundle and one direct assessment call.
 
 ## Runtime and cost
 
 Module 2 usually takes seconds. A full run depends on provider latency and the configured four-minute budget. The default profile caps external calls at 18 and critic cycles at two. OpenRouter token usage is stored with the trajectory; model prices change, so the adapter does not invent an estimated cost when a validated price table is unavailable.
 
-## P0 boundaries
+## Scope boundaries
 
 Intentionally deferred: historical collection, ML forecasting, Roblox client automation, screenshots/vision, MCP/plugin packaging, watchlists, alerts, portfolios, and acquisition decisions. Public Roblox endpoints may change; failures are recorded as degraded evidence. Badge interpretations must remain labeled inferences.

@@ -70,7 +70,7 @@ const common = {
 export const profiles: Record<string, ProfileSnapshot> = {
   baseline: { ...common, id: "baseline", label: "Baseline", description: "Current Roblox data plus one direct model assessment — the orchestrator has no sub-agents to delegate to.", enabled_modules: ["roblox-data", "orchestrator"], limits: { ...common.limits, max_iterations: 2, max_external_calls: 6, max_critic_cycles: 0 } },
   "research-no-critic": { ...common, id: "research-no-critic", label: "Research, no critic", description: "Orchestrator may delegate to the data and socials agents; no verification pass.", enabled_modules: ["roblox-data", "orchestrator", "data-agent", "market-intelligence"], limits: { ...common.limits, max_critic_cycles: 0 } },
-  "hackathon-full": { ...common, id: "hackathon-full", label: "Hackathon full", description: "Complete P0 workflow: orchestrator delegates to real tool-using agents, with up to two critic revision cycles.", enabled_modules: ["roblox-data", "orchestrator", "data-agent", "market-intelligence", "critic"] },
+  full: { ...common, id: "full", label: "Full", description: "Complete workflow: orchestrator delegates to real tool-using agents, with up to two critic revision cycles.", enabled_modules: ["roblox-data", "orchestrator", "data-agent", "market-intelligence", "critic"] },
   "demo-replay": { ...common, id: "demo-replay", label: "Demo replay", description: "Deterministic cached evidence; clearly labeled as fixture data.", enabled_modules: ["roblox-data", "orchestrator", "market-intelligence", "critic"], enabled_tools: ["fixture"], fixture_mode: true },
 };
 

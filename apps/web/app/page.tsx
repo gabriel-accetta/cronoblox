@@ -22,7 +22,7 @@ export default function HomePage() {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [mode, setMode] = useState<UserMode>("developer");
-  const [profile, setProfile] = useState("hackathon-full");
+  const [profile, setProfile] = useState("full");
   const [effort, setEffort] = useState<Effort>("medium");
   const [advanced, setAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -62,7 +62,7 @@ export default function HomePage() {
           </div>
           <label htmlFor="profile">ANALYSIS PROFILE</label>
           <select id="profile" className="profile-select" value={profile} onChange={(e) => setProfile(e.target.value)}>
-            <option value="hackathon-full">Hackathon full — research + critic</option>
+            <option value="full">Full — research + critic</option>
             <option value="research-no-critic">Research, no critic</option>
             <option value="baseline">Baseline — direct assessment only</option>
             <option value="demo-replay">Demo replay — cached fixture</option>
@@ -93,5 +93,5 @@ export default function HomePage() {
 }
 
 function SiteHeader() {
-  return <header className="topbar"><a className="brand" href="/" aria-label="Cronoblox home"><span className="brand-mark">C</span><span>CRONOBLOX</span></a><div className="status-chip"><span /> SYSTEM READY</div></header>;
+  return <header className="topbar"><a className="brand" href="/" aria-label="Cronoblox home"><img className="brand-logo" src="/cronoblox-logo.png" alt="Cronoblox" width={160} height={22} /></a><div className="status-chip"><span /> SYSTEM READY</div></header>;
 }

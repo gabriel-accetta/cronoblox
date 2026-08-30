@@ -19,4 +19,4 @@ Baseline receives current Module 2 data plus one direct model call; full runs ad
 | DOORS | horror breakout control | pending | pending | unscored |
 | Contradictory cached case | hard case: update spike vs durability | pending | pending | unscored |
 
-Run live cases through the baseline and hackathon-full profiles, preserve every failure, then enter human scores in the JSON export.
+Run live cases through the baseline and full profiles, preserve every failure, then enter human scores in the JSON export.

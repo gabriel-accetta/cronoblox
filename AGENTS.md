@@ -17,7 +17,7 @@ Strict TypeScript pnpm monorepo, modular monolith + one background worker. All p
 
 ## Module system (packages/module-sdk)
 
-Every pipeline step is a `CronobloxModule<TInput, TOutput>` = `{ manifest, inputSchema, outputSchema, execute(input, context) }`. `ModuleRegistry.register(...)` collects them (see `packages/engine/src/index.ts` for the registry + P0 order); `ModuleRunner.run(id, input, ctx)` validates input/output against the module's Zod schemas, persists the result + evidence, and returns a `ModuleResult`. `ModuleContext` gives a module: the immutable `profile`, an `AbortSignal` tied to `max_runtime_ms`, evidence read/write, raw-artifact storage, event emission, the shared `budget`, and `runModule()` so one module (the orchestrator) can invoke another as a sub-call.
+Every pipeline step is a `CronobloxModule<TInput, TOutput>` = `{ manifest, inputSchema, outputSchema, execute(input, context) }`. `ModuleRegistry.register(...)` collects them (see `packages/engine/src/index.ts` for the registry + fixed order); `ModuleRunner.run(id, input, ctx)` validates input/output against the module's Zod schemas, persists the result + evidence, and returns a `ModuleResult`. `ModuleContext` gives a module: the immutable `profile`, an `AbortSignal` tied to `max_runtime_ms`, evidence read/write, raw-artifact storage, event emission, the shared `budget`, and `runModule()` so one module (the orchestrator) can invoke another as a sub-call.
 
 ## Agents (packages/agent-core, agent-tools)
 
@@ -39,7 +39,7 @@ A single `RunBudget` (`createRunBudget`, in agent-core) is shared across *every*
 | `apps/worker` | BullMQ worker; only entry point that calls `executeRun` |
 | `packages/contracts` | All shared Zod schemas/types — single source of truth for every data shape (RunState, Evidence, ProfileSnapshot, Thesis, Report, ...) |
 | `packages/module-sdk` | `CronobloxModule` interface, `ModuleRegistry`/`ModuleRunner` |
-| `packages/engine` | The state machine that runs modules in P0 order and builds the final `Report` |
+| `packages/engine` | The state machine that runs modules in fixed order and builds the final `Report` |
 | `packages/agent-core` | Domain-agnostic LLM tool-calling loop + OpenRouter client + shared run budget |
 | `packages/agent-tools` | Cronoblox-specific `AgentTool`s wrapping `packages/sources/*`, emitting `Evidence` |
 | `packages/modules/roblox-data` | Required core module: audits the Roblox game, computes derived metrics |
@@ -62,7 +62,7 @@ A single `RunBudget` (`createRunBudget`, in agent-core) is shared across *every*
 Four fixed profiles select which modules/tools run and the run's limits; a profile is **snapshotted onto the run at creation and never mutated afterward** (`run.profileSnapshot`, immutable JSONB):
 - `baseline` — roblox-data + orchestrator only, no delegation, no critic (control condition).
 - `research-no-critic` — orchestrator may delegate to data-agent/market-intelligence, no critic.
-- `hackathon-full` — full pipeline including critic revision cycles.
+- `full` — full pipeline including critic revision cycles.
 - `demo-replay` — deterministic cached fixture evidence via `FixtureAnalyst`, no API keys required, no live provider calls; every fixture output is explicitly labeled as such and must never be presented as live evidence.
 
 ## Conventions / invariants an agent must preserve
@@ -78,7 +78,7 @@ Four fixed profiles select which modules/tools run and the run's limits; a profi
 - `tests/` — Vitest suite (`vitest.config.ts` includes only `tests/**/*.test.ts`, not colocated specs). All deterministic, no real DB/Redis/LLM/network. `contracts.test.ts` (evidence schema, append-only, `assertReportEvidence`), `registry.test.ts` (module order/uniqueness/profile gating), `stopping.test.ts` (`evaluateStoppingRule` table tests), `sources.test.ts` (`parsePlaceId` URL parsing), `openrouter.test.ts` (stubs `fetch` to assert `runAgentLoop` hits OpenRouter correctly), `fixture-flow.test.ts` (runs the real `registry`/`ModuleRunner` through the `demo-replay` profile end-to-end — the closest thing to an integration test here).
 - `e2e/home.spec.ts` — Playwright, driven by `playwright.config.ts` (spins up `pnpm dev:web` on `127.0.0.1:3017`). Mocks `/api/runs*` at the network layer with hand-built fixture `run`/`evidence`/`report` payloads, so it tests `apps/web`'s rendering/polling, not a real worker run.
 - `scripts/roblox-contract-smoke.ts` — the one test that hits the **real** live Roblox API (`pnpm test:roblox-contract`, not part of `pnpm test`/CI-blocking). A canary for undocumented-endpoint drift.
-- `packages/evaluation/` + `evaluation-output/` — two halves of one thing. `packages/evaluation/{cases.json,rubric.json}` are frozen hand-authored cases + rubric dimensions; `pnpm evaluate` reads them and writes `evaluation-output/evaluation.{json,md}` as **unscored templates** (`baseline_run_id`/`full_run_id`/measurements all null). It runs no analyses itself — the workflow is: manually run each case through `baseline` and `hackathon-full`, fill in real run ids/measurements, then a human scores the rubric. `evaluation-output/` is generated output, not source.
+- `packages/evaluation/` + `evaluation-output/` — two halves of one thing. `packages/evaluation/{cases.json,rubric.json}` are frozen hand-authored cases + rubric dimensions; `pnpm evaluate` reads them and writes `evaluation-output/evaluation.{json,md}` as **unscored templates** (`baseline_run_id`/`full_run_id`/measurements all null). It runs no analyses itself — the workflow is: manually run each case through `baseline` and `full`, fill in real run ids/measurements, then a human scores the rubric. `evaluation-output/` is generated output, not source.
 - `docker-compose.yml` — only the two stateful deps for local dev: `postgres:16-alpine` (`5434→5432`) and `redis:7-alpine` (`6381→6379`), named volumes + healthchecks. `apps/web`/`apps/worker` are never containerized; always run via `pnpm dev:*`.
 
 ## Commands

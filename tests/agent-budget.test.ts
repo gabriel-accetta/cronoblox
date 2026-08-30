@@ -118,9 +118,9 @@ describe("agent loop budget enforcement", () => {
 
 describe("effort scaling", () => {
   it("shrinks every work dimension at low effort and never raises the cost ceiling", () => {
-    const low = getProfile("hackathon-full", "low");
-    const medium = getProfile("hackathon-full", "medium");
-    const high = getProfile("hackathon-full", "high");
+    const low = getProfile("full", "low");
+    const medium = getProfile("full", "medium");
+    const high = getProfile("full", "high");
 
     expect(low.limits.max_external_calls).toBeLessThan(medium.limits.max_external_calls);
     expect(low.limits.max_search_results).toBeLessThan(medium.limits.max_search_results);
@@ -138,7 +138,7 @@ describe("effort scaling", () => {
     // baseline caps critic cycles at 0 and calls at 6; high effort must not override that intent.
     const baseline = getProfile("baseline", "high");
     expect(baseline.limits.max_critic_cycles).toBe(0);
-    expect(baseline.limits.max_external_calls).toBeLessThan(getProfile("hackathon-full", "high").limits.max_external_calls);
+    expect(baseline.limits.max_external_calls).toBeLessThan(getProfile("full", "high").limits.max_external_calls);
   });
 });
 

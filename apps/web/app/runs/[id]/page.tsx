@@ -25,7 +25,7 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
   return <main className="run-shell"><RunHeader />{data.report ? <ReportView report={data.report} /> : <ProgressView detail={data} onRefresh={() => query.refetch()} />}</main>;
 }
 
-function RunHeader() { return <header className="topbar run-topbar"><a className="brand" href="/"><span className="brand-mark">C</span><span>CRONOBLOX</span></a><a className="back-link" href="/"><ArrowLeft /> <span>NEW AUDIT</span></a></header>; }
+function RunHeader() { return <header className="topbar run-topbar"><a className="brand" href="/" aria-label="Cronoblox home"><img className="brand-logo" src="/cronoblox-logo.png" alt="Cronoblox" width={160} height={22} /></a><a className="back-link" href="/"><ArrowLeft /> <span>NEW AUDIT</span></a></header>; }
 function LoadingPage() { return <main className="run-shell"><RunHeader /><div className="run-loading"><LoaderCircle /><p>Loading investigation…</p></div></main>; }
 
 /* ------------------------------------------------------------------ progress */
@@ -193,9 +193,21 @@ function evidenceWeight(item: Evidence) {
   return STRENGTH_RANK[item.support_strength] * 100 + RELATION_RANK[item.relationship] * 10 + KIND_RANK[item.kind];
 }
 
+/**
+ * YouTube evidence all lands at the same weight (fact / medium / contextualizes), so view count is
+ * what separates it: the video the most people actually watched is the stronger coverage signal.
+ * Non-video records return -1 and keep their existing relative order.
+ */
+function evidenceViews(item: Evidence) {
+  if (!item.source.type.startsWith("youtube")) return -1;
+  const value = item.observation?.value;
+  const views = typeof value === "object" && value !== null ? (value as { views?: unknown }).views : null;
+  return typeof views === "number" ? views : -1;
+}
+
 function EvidenceDrawer({ runId, ids, label, summary, onClose }: { runId: string; ids: string[]; label: string; summary?: string; onClose: () => void }) {
   const query = useQuery({ queryKey: ["evidence", runId], queryFn: async () => { const response = await fetch(`/api/runs/${runId}/evidence`); return (await response.json()).evidence as Evidence[]; } });
-  const items = useMemo(() => (query.data ?? []).filter((item) => ids.includes(item.id)).sort((a, b) => evidenceWeight(b) - evidenceWeight(a)), [query.data, ids]);
+  const items = useMemo(() => (query.data ?? []).filter((item) => ids.includes(item.id)).sort((a, b) => evidenceWeight(b) - evidenceWeight(a) || evidenceViews(b) - evidenceViews(a)), [query.data, ids]);
 
   return <div className="drawer-backdrop" onClick={onClose}>
     <aside className="evidence-drawer" onClick={(e) => e.stopPropagation()} aria-label="Evidence details">
