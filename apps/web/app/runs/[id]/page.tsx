@@ -24,7 +24,7 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
   if (query.isLoading) return <LoadingPage />;
   if (query.isError || !data) return <main className="run-shell"><RunHeader /><div className="run-error"><AlertTriangle /><h1>Investigation unavailable</h1><p>{query.error?.message ?? "Run not found"}</p><a href="/">Return home</a></div></main>;
   return <main className="run-shell"><RunHeader />{data.report
-    ? <><RunTabs view={view} onChange={switchView} steps={data.events.length} /><div hidden={view !== "report"}><ReportView report={data.report} /></div>{view === "trajectory" && <TrajectoryView detail={data} />}</>
+    ? <><RunTabs view={view} onChange={switchView} steps={data.events.length} /><div className="run-view" hidden={view !== "report"}><ReportView report={data.report} /></div>{view === "trajectory" && <TrajectoryView detail={data} />}</>
     : <ProgressView detail={data} onRefresh={() => query.refetch()} />}</main>;
 }
 

@@ -103,6 +103,18 @@ pnpm evaluate:sweep   # enqueues 20 runs: 10 baseline + 10 full
 pnpm evaluate         # reads them back out of Postgres and writes the comparison
 ```
 
+To sweep the deployed instance instead of your own — which is how the published table was produced,
+and needs no database and no API key of your own:
+
+```bash
+CRONOBLOX_PUBLIC_URL=https://cronoblox.duckdns.org pnpm evaluate:sweep
+pnpm evaluate --remote https://cronoblox.duckdns.org
+```
+
+`evaluate:sweep` records the run ids it created in `evaluation-output/sweep.json`, and `--remote`
+replays them through the instance's own public JSON API — the same endpoints the browser uses. That
+is why every run id in the published table is a link you can open.
+
 `evaluate:sweep` only enqueues — the worker owns execution, so it is safe to interrupt and re-run.
 Watch progress at <http://localhost:3017>. When the queue drains, `pnpm evaluate` regenerates
 [`evaluation-output/evaluation.md`](../evaluation-output/evaluation.md) and
@@ -113,9 +125,10 @@ and no score is hand-assigned — re-running the two commands rebuilds the whole
 20-30 minutes depending on worker concurrency (`WORKER_CONCURRENCY`, default 2) and provider
 latency. **Expected cost:** about **$0.05** for all 20 runs.
 
-**Expected output:** the headline comparison table, per-case results, and the run id of every run
-so any row can be re-opened and audited. Runs that failed are reported as failures rather than
-re-rolled.
+**Expected output:** the headline comparison table, per-case results, and the run id of every run so
+any row can be re-opened and audited. Runs that failed are reported as failures rather than
+re-rolled. Export any run's full agent trace with
+`pnpm trajectory [--remote <origin>] <run-id>`.
 
 Because these are live public games, absolute numbers will drift as the games themselves change.
 The comparison is paired and run within the same hour, so the **baseline-vs-agent gap** is what

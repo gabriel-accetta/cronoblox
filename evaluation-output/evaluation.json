@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-31T15:49:13.303Z",
+  "generated_at": "2026-08-31T16:14:06.827Z",
   "spec": {
     "version": 2,
     "frozen_at": "2026-08-31",
@@ -84,29 +84,29 @@
         "role": "breakout-adjacent \"steal\" genre"
       }
     ],
-    "hard_case_finding": "**Merge a Spinner!** is the hard case: a game carrying an `[UPD 2]` tag and a 6.6K concurrent player base, where the whole question is whether that is durable interest or an update spike. It is also the case that repeatedly exposed real bugs during development — two earlier live runs on this game failed at the critic (`59caef44-3216-42be-afc7-aacbd590e3dd`), which is what produced the per-turn deadline and the unverified-draft degradation path.\n\nIn the evaluation sweep the baseline rated it MODERATE from one source. The agent gathered 38 independent sources, also arrived at MODERATE — and then the critic raised four objections that are the actual result here:\n\n1. It found that the report's claim *\"no top-tier influencer has covered this game\"* was anchored to evidence documenting SSundee's 339K-view video about **a different game** (Merge a Tank). An absence cannot be proven by a record about something else. The critic let the rating stand but logged the claim as under-supported.\n2. It flagged that a 92.1% like ratio was derived from records whose stored observations do not expose the underlying vote counts — the number was right, but its lineage was not independently checkable from the cited records alone.\n3. It rejected *\"self-sustaining player interest\"* as an interpretive leap from four videos with 6 to 635 views.\n\n**What it revealed:** the failure mode that survives an evidence gate is not fabrication — every one of those claims cited a real, persisted record. It is *misattribution*: a claim pointing at evidence that exists but does not actually support it. A gate can only check that a record exists; checking that it supports the claim is exactly the job the critic does, and it is why the verification pass earns its cost. Note also that the critic held MODERATE rather than lowering it, because the objections concerned support quality, not the conclusion — a verifier that lowers every rating it touches is as useless as one that never does."
+    "hard_case_finding": "**Merge a Spinner!** is the frozen hard case: a game carrying an `[UPD 2]` tag and ~6,000 concurrent players, where the entire question is whether that is durable interest or an update spike. It is also the game that repeatedly broke the system during development — two earlier live runs failed at the critic (`59caef44-3216-42be-afc7-aacbd590e3dd`), which is what produced the per-turn deadline and the unverified-draft degradation path.\n\nIn this sweep the baseline rated it MODERATE from a single source. The agent gathered **36 independent sources**, arrived at MODERATE as well — and then the critic raised three objections that are the real result here:\n\n1. **A number that was right but not checkable.** The 92.1% like ratio was derived from records (`ev_6e06d999`, `ev_ff62196a`, `ev_364f526`) that contain no up-vote or down-vote values, so the ratio's provenance could not be verified from the evidence actually cited. The critic also caught the claim splicing that ratio onto a *lifetime* visit count as if the two described the same population.\n2. **An overclaim from near-zero evidence.** \"Genuinely diverse across regions and content types\" rested on two videos with **2 views and 635 views**. The videos are real; the conclusion is not available from them.\n3. **A halo that belongs to other games.** The YouTube attention supporting the thesis demonstrably feeds *adjacent* merge titles rather than this one. The critic confirmed the report had labeled this correctly as a transfer risk rather than misattributing it — and held the rating at MODERATE partly because of it.\n\n**What it revealed:** the failure mode that survives an evidence gate is not fabrication. Every claim above cited a real, persisted record, and the gate passed all of them — correctly, because the records existed. What the gate cannot check is whether a record *supports* the sentence attached to it. Existence is mechanical; support is a judgement. That is the entire job of the critic, and it is why the verification pass earns its cost.\n\nNote that the critic **held** MODERATE rather than lowering it. The objections concerned the quality of support, not the conclusion, and it said so. A verifier that downgrades everything it touches is as useless as one that never does — in this sweep it lowered 4 of 10 ratings and held the rest."
   },
   "summary": {
     "cases": 10,
     "completed": {
-      "baseline": 6,
-      "solution": 4
+      "baseline": 10,
+      "solution": 10
     },
     "claim_evidence_coverage_pct": {
-      "baseline": 88.46153846153845,
+      "baseline": 90.32258064516128,
       "solution": 100
     },
     "distinct_sources_per_report": {
       "baseline": 1,
-      "solution": 35.25
+      "solution": 38.6
     },
     "evidence_records_per_report": {
       "baseline": 5,
-      "solution": 47
+      "solution": 55.7
     },
     "risk_claims_per_report": {
-      "baseline": 1.8333333333333333,
-      "solution": 3.25
+      "baseline": 1.2,
+      "solution": 2.9
     },
     "contradicting_evidence_total": {
       "baseline": 0,
@@ -114,31 +114,31 @@
     },
     "objections_raised_total": {
       "baseline": 0,
-      "solution": 11
+      "solution": 26
     },
     "ratings_lowered_by_verification": {
       "baseline": 0,
-      "solution": 1
+      "solution": 4
     },
     "unverified_drafts": {
       "baseline": 0,
-      "solution": 0
+      "solution": 1
     },
     "runtime_ms_per_report": {
-      "baseline": 11602.333333333334,
-      "solution": 109267.25
+      "baseline": 10488,
+      "solution": 109335.7
     },
     "cost_usd_per_report": {
-      "baseline": 0.0003134081813333333,
-      "solution": 0.004587176384
+      "baseline": 0.00029240444799999996,
+      "solution": 0.0044032852496
     },
     "model_turns_per_report": {
-      "baseline": 1.8333333333333333,
-      "solution": 12.75
+      "baseline": 1.9,
+      "solution": 13.7
     },
     "tool_calls_per_report": {
       "baseline": 0,
-      "solution": 21.25
+      "solution": 19
     }
   },
   "cases": [
@@ -354,23 +354,23 @@
       },
       "solution": {
         "run_id": "92380e97-dfce-413b-b111-848bebad1a88",
-        "state": "CRITIQUE",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 281034,
-        "cost_usd": null,
+        "runtime_ms": 74122,
+        "cost_usd": 0.0027520823679999997,
         "evidence_records": 48,
         "distinct_sources": 39,
-        "claims": 0,
-        "claims_with_evidence": 0,
-        "risk_claims": 0,
+        "claims": 6,
+        "claims_with_evidence": 6,
+        "risk_claims": 2,
         "contradicting_evidence": 0,
-        "objections": 0,
-        "model_turns": 10,
+        "objections": 3,
+        "model_turns": 11,
         "tool_calls": 12,
-        "initial_rating": null,
-        "final_rating": null,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
         "rating_lowered": false,
-        "verification_status": null
+        "verification_status": "completed"
       }
     },
     {
@@ -400,23 +400,23 @@
       },
       "solution": {
         "run_id": "37f9cc67-33c7-40af-975c-2d59dbe472bb",
-        "state": "EXECUTE",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 277083,
-        "cost_usd": null,
-        "evidence_records": 5,
-        "distinct_sources": 1,
-        "claims": 0,
-        "claims_with_evidence": 0,
-        "risk_claims": 0,
+        "runtime_ms": 149054,
+        "cost_usd": 0.007015368192,
+        "evidence_records": 96,
+        "distinct_sources": 59,
+        "claims": 8,
+        "claims_with_evidence": 8,
+        "risk_claims": 4,
         "contradicting_evidence": 0,
         "objections": 0,
-        "model_turns": 0,
-        "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
-        "rating_lowered": false,
-        "verification_status": null
+        "model_turns": 20,
+        "tool_calls": 26,
+        "initial_rating": "HIGH",
+        "final_rating": "MODERATE",
+        "rating_lowered": true,
+        "verification_status": "completed"
       }
     },
     {
@@ -426,43 +426,43 @@
       "role": "legacy durable niche control",
       "baseline": {
         "run_id": "03bf3c96-0f56-4e7b-98e6-4dea6ba633d6",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
-        "claims": 0,
-        "claims_with_evidence": 0,
-        "risk_claims": 0,
+        "runtime_ms": 11350,
+        "cost_usd": 0.000307286784,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 2,
+        "claims_with_evidence": 2,
+        "risk_claims": 1,
         "contradicting_evidence": 0,
         "objections": 0,
-        "model_turns": 0,
+        "model_turns": 2,
         "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
+        "initial_rating": "LOW",
+        "final_rating": "LOW",
         "rating_lowered": false,
-        "verification_status": null
+        "verification_status": "disabled"
       },
       "solution": {
         "run_id": "85faa28a-903a-4a60-bebf-c769f4714cfe",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
-        "claims": 0,
-        "claims_with_evidence": 0,
-        "risk_claims": 0,
+        "runtime_ms": 100274,
+        "cost_usd": 0.00367881472,
+        "evidence_records": 46,
+        "distinct_sources": 38,
+        "claims": 9,
+        "claims_with_evidence": 9,
+        "risk_claims": 3,
         "contradicting_evidence": 0,
-        "objections": 0,
-        "model_turns": 0,
-        "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
+        "objections": 3,
+        "model_turns": 12,
+        "tool_calls": 15,
+        "initial_rating": "LOW",
+        "final_rating": "LOW",
         "rating_lowered": false,
-        "verification_status": null
+        "verification_status": "completed"
       }
     },
     {
@@ -472,43 +472,43 @@
       "role": "recent horror/co-op release",
       "baseline": {
         "run_id": "c4a2a873-d97d-49d6-851a-ed1d4b5dc242",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
-        "claims": 0,
-        "claims_with_evidence": 0,
+        "runtime_ms": 10453,
+        "cost_usd": 0.00027798982400000004,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 3,
+        "claims_with_evidence": 3,
         "risk_claims": 0,
         "contradicting_evidence": 0,
         "objections": 0,
-        "model_turns": 0,
+        "model_turns": 2,
         "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
         "rating_lowered": false,
-        "verification_status": null
+        "verification_status": "disabled"
       },
       "solution": {
         "run_id": "92137d8d-99ca-4b6f-b67e-3c89a77fde27",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
-        "claims": 0,
-        "claims_with_evidence": 0,
-        "risk_claims": 0,
+        "runtime_ms": 106740,
+        "cost_usd": 0.00333296768,
+        "evidence_records": 41,
+        "distinct_sources": 26,
+        "claims": 7,
+        "claims_with_evidence": 7,
+        "risk_claims": 3,
         "contradicting_evidence": 0,
-        "objections": 0,
-        "model_turns": 0,
-        "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
-        "rating_lowered": false,
-        "verification_status": null
+        "objections": 4,
+        "model_turns": 11,
+        "tool_calls": 14,
+        "initial_rating": "MODERATE",
+        "final_rating": "LOW",
+        "rating_lowered": true,
+        "verification_status": "completed"
       }
     },
     {
@@ -518,43 +518,43 @@
       "role": "mid-age survival control",
       "baseline": {
         "run_id": "cb85a0f8-daf3-4e74-8a12-3b49c232a8e2",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
+        "runtime_ms": 7422,
+        "cost_usd": 0.000251486144,
+        "evidence_records": 5,
+        "distinct_sources": 1,
         "claims": 0,
         "claims_with_evidence": 0,
         "risk_claims": 0,
         "contradicting_evidence": 0,
         "objections": 0,
-        "model_turns": 0,
+        "model_turns": 2,
         "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
         "rating_lowered": false,
-        "verification_status": null
+        "verification_status": "disabled"
       },
       "solution": {
         "run_id": "173bdc54-e15e-49a6-bd07-7c9adc00c0eb",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
-        "claims": 0,
-        "claims_with_evidence": 0,
-        "risk_claims": 0,
+        "runtime_ms": 124238,
+        "cost_usd": 0.0055813632,
+        "evidence_records": 98,
+        "distinct_sources": 56,
+        "claims": 1,
+        "claims_with_evidence": 1,
+        "risk_claims": 1,
         "contradicting_evidence": 0,
-        "objections": 0,
-        "model_turns": 0,
-        "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
-        "rating_lowered": false,
-        "verification_status": null
+        "objections": 2,
+        "model_turns": 21,
+        "tool_calls": 25,
+        "initial_rating": "HIGH",
+        "final_rating": "LOW",
+        "rating_lowered": true,
+        "verification_status": "incomplete"
       }
     },
     {
@@ -564,43 +564,43 @@
       "role": "breakout-adjacent \"steal\" genre",
       "baseline": {
         "run_id": "8e72b91a-ddd0-4563-9604-fff37d0c9be9",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
+        "runtime_ms": 6041,
+        "cost_usd": 0.00020683264,
+        "evidence_records": 5,
+        "distinct_sources": 1,
         "claims": 0,
         "claims_with_evidence": 0,
         "risk_claims": 0,
         "contradicting_evidence": 0,
         "objections": 0,
-        "model_turns": 0,
+        "model_turns": 2,
         "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
+        "initial_rating": "HIGH",
+        "final_rating": "HIGH",
         "rating_lowered": false,
-        "verification_status": null
+        "verification_status": "disabled"
       },
       "solution": {
         "run_id": "cb2c0733-a097-44a5-b7ec-4ed3b144b9ba",
-        "state": "QUEUED",
+        "state": "COMPLETED",
         "error": null,
-        "runtime_ms": 0,
-        "cost_usd": null,
-        "evidence_records": 0,
-        "distinct_sources": 0,
-        "claims": 0,
-        "claims_with_evidence": 0,
-        "risk_claims": 0,
+        "runtime_ms": 101860,
+        "cost_usd": 0.0033235508,
+        "evidence_records": 40,
+        "distinct_sources": 27,
+        "claims": 8,
+        "claims_with_evidence": 8,
+        "risk_claims": 3,
         "contradicting_evidence": 0,
-        "objections": 0,
-        "model_turns": 0,
-        "tool_calls": 0,
-        "initial_rating": null,
-        "final_rating": null,
+        "objections": 3,
+        "model_turns": 11,
+        "tool_calls": 13,
+        "initial_rating": "VERY HIGH",
+        "final_rating": "VERY HIGH",
         "rating_lowered": false,
-        "verification_status": null
+        "verification_status": "completed"
       }
     }
   ]

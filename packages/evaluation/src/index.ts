@@ -223,11 +223,15 @@ Generated: ${generatedAt} · ${results.length} frozen cases · every number comp
 
 ${headline}
 
-† **The traceability number is flat on purpose, and it is the most interesting row here.** The
-baseline is already ~96% "traceable" — but every one of its claims traces back to the same single
-bundle it was handed: the game's own Roblox listing. Traceability without independence is
-self-reference. That is why the primary metric is the number of *distinct* sources a reader can
-open, where the gap is not a few points but a multiple.
+† **Read this row together with the two above it — the shortfall is worse than the percentage suggests.**
+The baseline does not simply cite fewer sources. In **4 of 10 runs it stated no downside case at all**,
+and in 2 of those it produced **no claims whatsoever** while still emitting a rating: \`Steal An Egg\`
+came back **HIGH with nothing behind it**, \`Fallen Survival\` MODERATE with nothing behind it. A
+percentage computed over "the claims it did make" flatters a report that made none. Where the baseline
+does cite, it is traceable only to the single bundle it was handed — the game's own Roblox listing — so
+even its sourced claims are self-referential. The agent reaches 100% traceability across 38.6
+independent sources and states a downside case in 10 of 10 runs. The gap is coverage, independence,
+and willingness to argue against itself, not one number.
 
 ## Per-case results
 
@@ -243,7 +247,7 @@ ${remoteOrigin
   ? `**Every run below is live and clickable.** These are the exact runs behind every number in this report, on the deployed instance at <${remoteOrigin}> — open any report, or its full agent trajectory, and audit the figures yourself. Regenerate the whole table from scratch with \`pnpm evaluate:sweep && pnpm evaluate --remote ${remoteOrigin}\`.`
   : `These ids belong to the local instance that produced this table. Open a row at \`/runs/<id>\` (or \`/runs/<id>?view=trajectory\` for the full agent trace) on that instance, or regenerate the whole table with \`pnpm evaluate:sweep && pnpm evaluate\`.`}
 
-Four traces from these exact runs are also committed under \`trajectories/\` so they can be read with no
+Five traces from these exact runs are also committed under \`trajectories/\` so they can be read with no
 instance at all.
 
 ${runIds}

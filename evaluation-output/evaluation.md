@@ -1,6 +1,6 @@
 # Evaluation — simple baseline vs. Cronoblox agent
 
-Generated: 2026-08-31T15:49:13.303Z · 10 frozen cases · every number computed from persisted run records by `pnpm evaluate`, read back through the deployed instance’s public API at <https://cronoblox.duckdns.org>.
+Generated: 2026-08-31T16:14:06.827Z · 10 frozen cases · every number computed from persisted run records by `pnpm evaluate`, read back through the deployed instance’s public API at <https://cronoblox.duckdns.org>.
 
 **Primary metric.** Independent corroboration behind the verdict — the number of distinct external sources a reader can open to check the report, rather than taking the game's own page at its word.
 
@@ -14,22 +14,26 @@ Generated: 2026-08-31T15:49:13.303Z · 10 frozen cases · every number computed 
 
 | Metric | Simple baseline | Agent solution | Change |
 | --- | ---: | ---: | ---: |
-| **Independent sources behind the verdict** (primary) | 1.0 | 35.3 | **35×** |
-| Evidence records per report | 5.0 | 47.0 | +42.0 |
-| Claims traceable to a source | 88.5% | 100.0% | +11.5 pts † |
-| Downside claims per report | 1.8 | 3.3 | +1.4 |
-| Objections raised by verification | 0 | 11 | +11 |
-| Ratings lowered after verification | 0 — structurally impossible | 1 / 4 | — |
-| Runs degraded to a labeled unverified draft | n/a | 0 / 4 | — |
+| **Independent sources behind the verdict** (primary) | 1.0 | 38.6 | **39×** |
+| Evidence records per report | 5.0 | 55.7 | +50.7 |
+| Claims traceable to a source | 90.3% | 100.0% | +9.7 pts † |
+| Downside claims per report | 1.2 | 2.9 | +1.7 |
+| Objections raised by verification | 0 | 26 | +26 |
+| Ratings lowered after verification | 0 — structurally impossible | 4 / 10 | — |
+| Runs degraded to a labeled unverified draft | n/a | 1 / 10 | — |
 | Human time per task | ~30-45 min manual | 1m49s unattended | — |
-| Runtime per task | 11.6s | 1m49s | +97.7s |
-| Cost per task | $0.0003 | $0.0046 | +0.0043 |
+| Runtime per task | 10.5s | 1m49s | +98.8s |
+| Cost per task | $0.0003 | $0.0044 | +0.0041 |
 
-† **The traceability number is flat on purpose, and it is the most interesting row here.** The
-baseline is already ~96% "traceable" — but every one of its claims traces back to the same single
-bundle it was handed: the game's own Roblox listing. Traceability without independence is
-self-reference. That is why the primary metric is the number of *distinct* sources a reader can
-open, where the gap is not a few points but a multiple.
+† **Read this row together with the two above it — the shortfall is worse than the percentage suggests.**
+The baseline does not simply cite fewer sources. In **4 of 10 runs it stated no downside case at all**,
+and in 2 of those it produced **no claims whatsoever** while still emitting a rating: `Steal An Egg`
+came back **HIGH with nothing behind it**, `Fallen Survival` MODERATE with nothing behind it. A
+percentage computed over "the claims it did make" flatters a report that made none. Where the baseline
+does cite, it is traceable only to the single bundle it was handed — the game's own Roblox listing — so
+even its sourced claims are self-referential. The agent reaches 100% traceability across 38.6
+independent sources and states a downside case in 10 of 10 runs. The gap is coverage, independence,
+and willingness to argue against itself, not one number.
 
 ## Per-case results
 
@@ -39,30 +43,32 @@ open, where the gap is not a few points but a multiple.
 | Build a Gun Army | trend-chasing "build a" clone | 1 → 43 | 57% → 100% | 3 → 3 | 0 | MODERATE → MODERATE | completed |
 | **Merge a Spinner!** ⚠️ | HARD CASE: update spike vs durability | 1 → 36 | 100% → 100% | 2 → 3 | 3 | MODERATE → MODERATE | completed |
 | Jump To Steal Soccer Players | "steal" genre trend follower | 1 → 32 | 100% → 100% | 1 → 3 | 4 | HIGH → MODERATE | completed |
-| +1 Cut Grass Adventure | incremental/idle trend follower | 1 → CRITIQUE | — | — | — | — | preserved failure |
-| Clean all the leaves! | simulator trend follower | 1 → EXECUTE | — | — | — | — | preserved failure |
-| Rogue Lineage | legacy durable niche control | QUEUED → QUEUED | — | — | — | — | preserved failure |
-| Debt Hunt | recent horror/co-op release | QUEUED → QUEUED | — | — | — | — | preserved failure |
-| Fallen Survival | mid-age survival control | QUEUED → QUEUED | — | — | — | — | preserved failure |
-| Steal An Egg | breakout-adjacent "steal" genre | QUEUED → QUEUED | — | — | — | — | preserved failure |
+| +1 Cut Grass Adventure | incremental/idle trend follower | 1 → 39 | 100% → 100% | 3 → 2 | 3 | MODERATE → MODERATE | completed |
+| Clean all the leaves! | simulator trend follower | 1 → 59 | 100% → 100% | 2 → 4 | 0 | HIGH → MODERATE | completed |
+| Rogue Lineage | legacy durable niche control | 1 → 38 | 100% → 100% | 1 → 3 | 3 | LOW → LOW | completed |
+| Debt Hunt | recent horror/co-op release | 1 → 26 | 100% → 100% | 0 → 3 | 4 | MODERATE → LOW | completed |
+| Fallen Survival | mid-age survival control | 1 → 56 | — → 100% | 0 → 1 | 2 | HIGH → LOW | incomplete |
+| Steal An Egg | breakout-adjacent "steal" genre | 1 → 27 | — → 100% | 0 → 3 | 3 | VERY HIGH → VERY HIGH | completed |
 
 ## The hard case
 
-**Merge a Spinner!** is the hard case: a game carrying an `[UPD 2]` tag and a 6.6K concurrent player base, where the whole question is whether that is durable interest or an update spike. It is also the case that repeatedly exposed real bugs during development — two earlier live runs on this game failed at the critic (`59caef44-3216-42be-afc7-aacbd590e3dd`), which is what produced the per-turn deadline and the unverified-draft degradation path.
+**Merge a Spinner!** is the frozen hard case: a game carrying an `[UPD 2]` tag and ~6,000 concurrent players, where the entire question is whether that is durable interest or an update spike. It is also the game that repeatedly broke the system during development — two earlier live runs failed at the critic (`59caef44-3216-42be-afc7-aacbd590e3dd`), which is what produced the per-turn deadline and the unverified-draft degradation path.
 
-In the evaluation sweep the baseline rated it MODERATE from one source. The agent gathered 38 independent sources, also arrived at MODERATE — and then the critic raised four objections that are the actual result here:
+In this sweep the baseline rated it MODERATE from a single source. The agent gathered **36 independent sources**, arrived at MODERATE as well — and then the critic raised three objections that are the real result here:
 
-1. It found that the report's claim *"no top-tier influencer has covered this game"* was anchored to evidence documenting SSundee's 339K-view video about **a different game** (Merge a Tank). An absence cannot be proven by a record about something else. The critic let the rating stand but logged the claim as under-supported.
-2. It flagged that a 92.1% like ratio was derived from records whose stored observations do not expose the underlying vote counts — the number was right, but its lineage was not independently checkable from the cited records alone.
-3. It rejected *"self-sustaining player interest"* as an interpretive leap from four videos with 6 to 635 views.
+1. **A number that was right but not checkable.** The 92.1% like ratio was derived from records (`ev_6e06d999`, `ev_ff62196a`, `ev_364f526`) that contain no up-vote or down-vote values, so the ratio's provenance could not be verified from the evidence actually cited. The critic also caught the claim splicing that ratio onto a *lifetime* visit count as if the two described the same population.
+2. **An overclaim from near-zero evidence.** "Genuinely diverse across regions and content types" rested on two videos with **2 views and 635 views**. The videos are real; the conclusion is not available from them.
+3. **A halo that belongs to other games.** The YouTube attention supporting the thesis demonstrably feeds *adjacent* merge titles rather than this one. The critic confirmed the report had labeled this correctly as a transfer risk rather than misattributing it — and held the rating at MODERATE partly because of it.
 
-**What it revealed:** the failure mode that survives an evidence gate is not fabrication — every one of those claims cited a real, persisted record. It is *misattribution*: a claim pointing at evidence that exists but does not actually support it. A gate can only check that a record exists; checking that it supports the claim is exactly the job the critic does, and it is why the verification pass earns its cost. Note also that the critic held MODERATE rather than lowering it, because the objections concerned support quality, not the conclusion — a verifier that lowers every rating it touches is as useless as one that never does.
+**What it revealed:** the failure mode that survives an evidence gate is not fabrication. Every claim above cited a real, persisted record, and the gate passed all of them — correctly, because the records existed. What the gate cannot check is whether a record *supports* the sentence attached to it. Existence is mechanical; support is a judgement. That is the entire job of the critic, and it is why the verification pass earns its cost.
+
+Note that the critic **held** MODERATE rather than lowering it. The objections concerned the quality of support, not the conclusion, and it said so. A verifier that downgrades everything it touches is as useless as one that never does — in this sweep it lowered 4 of 10 ratings and held the rest.
 
 ## Run identifiers
 
 **Every run below is live and clickable.** These are the exact runs behind every number in this report, on the deployed instance at <https://cronoblox.duckdns.org> — open any report, or its full agent trajectory, and audit the figures yourself. Regenerate the whole table from scratch with `pnpm evaluate:sweep && pnpm evaluate --remote https://cronoblox.duckdns.org`.
 
-Four traces from these exact runs are also committed under `trajectories/` so they can be read with no
+Five traces from these exact runs are also committed under `trajectories/` so they can be read with no
 instance at all.
 
 | Case | Baseline run | Full run |

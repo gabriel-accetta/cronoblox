@@ -52,49 +52,56 @@ for one. What the user actually needs is not a faster opinion, it is an opinion 
 
 ## Results
 
-Ten live Roblox games, each run twice within the same hour: once on a simple baseline (same model,
-same data, one direct call) and once on the full agent workflow. Identical URL, effort and user
-mode. Every number below is computed from persisted run records by `pnpm evaluate`.
+Ten live Roblox games, each run twice within the same hour on the **deployed instance above**: once
+on a simple baseline (same model, same data, one direct call) and once on the full agent workflow.
+Identical URL, effort and user mode. Every number below is computed from persisted run records —
+and **every run is a live link you can open and audit**.
 
 | Metric | Simple baseline | Agent solution | Change |
 | --- | ---: | ---: | ---: |
-| **Independent sources behind the verdict** (primary) | 1.0 | 30.6 | **31×** |
-| Evidence records per report | 5.0 | 47.6 | +42.6 |
-| Claims traceable to a source | 95.7% | 97.5% | +1.9 pts † |
-| Downside claims per report | 2.8 | 3.4 | +0.6 |
-| Objections raised by verification | 0 | 28 | +28 |
+| **Independent sources behind the verdict** (primary) | 1.0 | 38.6 | **39×** |
+| Evidence records per report | 5.0 | 55.7 | +50.7 |
+| Claims traceable to a source | 90.3% | 100.0% | +9.7 pts † |
+| Downside claims per report | 1.2 | 2.9 | +1.7 |
+| Objections raised by verification | 0 | 26 | +26 |
 | Ratings lowered after verification | 0 — structurally impossible | 4 / 10 | — |
 | Runs degraded to a labeled unverified draft | n/a | 1 / 10 | — |
-| Human time per task | ~30-45 min manual | 3m22s unattended | — |
-| Runtime per task | 26.2s | 3m22s | +176.1s |
-| Cost per task | $0.0005 | $0.0050 | +0.0045 |
+| Human time per task | ~30-45 min manual | 1m49s unattended | — |
+| Runtime per task | 10.5s | 1m49s | +98.8s |
+| Cost per task | $0.0003 | $0.0044 | +0.0041 |
 
-† **The traceability number is flat on purpose, and it is the most interesting row here.** The
-baseline is already ~96% "traceable" — but every one of its claims traces back to the same single
-bundle it was handed: the game's own Roblox listing. Traceability without independence is
-self-reference. That is why the primary metric is the number of *distinct* sources a reader can
-open, where the gap is not a few points but a multiple.
+† **Read this row together with the two above it — the shortfall is worse than the percentage suggests.**
+The baseline does not simply cite fewer sources. In **4 of 10 runs it stated no downside case at all**,
+and in 2 of those it produced **no claims whatsoever** while still emitting a rating: `Steal An Egg`
+came back **HIGH with nothing behind it**, `Fallen Survival` MODERATE with nothing behind it. A
+percentage computed over "the claims it did make" flatters a report that made none. Where the baseline
+does cite, it is traceable only to the single bundle it was handed — the game's own Roblox listing — so
+even its sourced claims are self-referential. The agent reaches 100% traceability across 38.6
+independent sources and states a downside case in 10 of 10 runs. The gap is coverage, independence,
+and willingness to argue against itself, not one number.
 
 Full per-case results, the hard case, preserved failures and every run id:
 [`evaluation-output/evaluation.md`](evaluation-output/evaluation.md)
 
 ### What made the difference
 
-Three changes did three different things, and only two of them move a number.
+Three changes did three different things.
 
-**The critic changed the answer.** In **4 of 10 cases** it lowered the rating after verification, and
-it raised 28 objections the user would otherwise never see. On the hard case it caught a claim
-anchored to evidence about a *different game*. This is the largest contribution to decision quality —
-and the baseline cannot do it at all, since a single pass has nothing to check itself against.
+**The critic changed the answer.** It lowered the rating in **4 of 10 cases** and raised **26
+objections** the user would otherwise never see. On the hard case it caught a like-ratio whose
+provenance was not checkable from the records actually cited, and an overclaim built on two videos
+with 2 and 635 views. The baseline cannot do any of this — a single pass has nothing to check itself
+against.
 
 **Delegation made the verdict auditable.** Sub-agents took independent sources per report from
-**1.0 to 30.6**. The baseline's one source is the game's own Roblox listing — it is a summary of what
-the game says about itself.
+**1.0 to 38.6**. The baseline's single source is the game's own Roblox listing: a summary of what the
+game says about itself.
 
-**The evidence gate moves no metric, and that is the point.** `assertReportEvidence` and
-`keepKnownIds` are a floor, not a lift: they make it impossible to ship a report citing a record that
-does not exist. Measured traceability is nearly flat because neither profile fabricates ids — the
-gate is why that stays true under a model change, not something it improved.
+**The evidence gate is the floor everything else stands on.** `assertReportEvidence` and
+`keepKnownIds` make it impossible to ship a report citing a record that does not exist. The agent
+reaches **100% claim traceability**; the baseline sits at 90.3%, and that number flatters it, because
+**4 of its 10 runs stated no downside case at all** and 2 produced *no claims whatsoever* while still
+returning a rating — `Steal An Egg` came back **HIGH with nothing behind it**.
 
 **The experiment removed:** a numeric breakout probability. It was the most compelling-looking output
 in the product and the first thing users asked for — and there is no legally usable labeled history of
@@ -121,19 +128,19 @@ loop was forced to wrap up, and any retry — for all four agents in one timelin
 
 ### Representative runs
 
-| Trajectory | What it shows |
+Every one of these is live — click through to the report, or to the agent trace behind it.
+
+| Run | What it shows |
 | --- | --- |
-| [Rogue Lineage — baseline](trajectories/rogue-lineage-baseline.md) | 14 steps, 1 source, no verification. The control condition. |
-| [Rogue Lineage — full](trajectories/rogue-lineage-full.md) | 94 steps, 4 agents, 39 sources. The critic **lowered** MODERATE → LOW. |
-| [Merge a Spinner! — full](trajectories/upd-2-merge-a-spinner-full.md) | The hard case. The critic catches a claim anchored to evidence about a *different game*. |
-| [+1 Cut Grass Adventure — full](trajectories/1-cut-grass-adventure-full.md) | Verification times out; the run degrades to a labeled **unverified draft** instead of faking a critique. |
+| [Steal An Egg — **baseline**](https://cronoblox.duckdns.org/runs/8e72b91a-ddd0-4563-9604-fff37d0c9be9) | The control condition, and its worst failure: 14 steps, 1 source, **a HIGH rating with zero claims behind it**. |
+| [Steal An Egg — **full**](https://cronoblox.duckdns.org/runs/cb2c0733-a097-44a5-b7ec-4ed3b144b9ba?view=trajectory) | Same game, 66 steps, 4 agents, 27 sources, 8 claims, verification completed. |
+| [Merge a Spinner! — full](https://cronoblox.duckdns.org/runs/386fc820-e20d-4a35-8b64-ab84c2104a72?view=trajectory) | The hard case. 36 sources; the critic catches an uncheckable derivation and an overclaim from 2-view videos. |
+| [Debt Hunt — full](https://cronoblox.duckdns.org/runs/92137d8d-99ca-4b6f-b67e-3c89a77fde27?view=trajectory) | The critic **lowered** MODERATE → LOW after verification. |
+| [Fallen Survival — full](https://cronoblox.duckdns.org/runs/173bdc54-e15e-49a6-bd07-7c9adc00c0eb?view=trajectory) | 117 steps, budget exhausted at 25/25 calls; verification did not complete, so it degrades to a labeled **unverified draft** instead of faking a critique. |
 
-The evaluation's [run ids](evaluation-output/evaluation.md#run-identifiers) come from the sweep
-instance that produced the table — the public demo keeps its own database, so open those on the
-instance that ran them, or regenerate them locally with the two commands below.
-
-These four are exported to [`trajectories/`](trajectories/) so they can be read without running
-anything — regenerate any run with `pnpm trajectory <run-id>`.
+All five are also exported to [`trajectories/`](trajectories/) so they can be read with nothing
+installed. Every run in the [evaluation](evaluation-output/evaluation.md#run-identifiers) is
+clickable the same way; regenerate any of them with `pnpm trajectory --remote https://cronoblox.duckdns.org <run-id>`.
 
 ---
 

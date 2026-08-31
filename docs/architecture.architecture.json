@@ -4,141 +4,512 @@
   "meta": {
     "title": "Cronoblox — runtime architecture",
     "quality_profile": "showcase",
-    "viewBox": [1600, 850],
+    "viewBox": [
+      1340,
+      840
+    ],
     "repository": {
       "url": "https://github.com/gabriel-accetta/cronoblox",
       "revision": "bbd928e86056813914c1ffb05d813612883fb2dc"
     },
     "views": [
-      { "id": "request-path", "label": "Request path", "focus": ["user", "web", "queue", "engine", "postgres"], "note": "One public game URL becomes a persisted run: validate, enqueue, execute in the worker, poll state back out of Postgres." },
-      { "id": "fixed-pipeline", "label": "Fixed pipeline, chosen by code", "focus": ["engine", "roblox-data", "orchestrator", "critic"], "note": "A persisted state machine picks the top-level steps. No model can skip the mandatory data audit." },
-      { "id": "delegation", "label": "Delegation and sources", "focus": ["orchestrator", "data-agent", "market-intelligence", "providers"], "note": "The orchestrator may call two sub-agents as tools; every tool call that returns real data writes an evidence record." },
-      { "id": "verification", "label": "Verification and the gate", "focus": ["critic", "engine", "gate", "postgres"], "note": "The critic may hold or lower the rating, never raise it. FINALIZE refuses any report citing evidence that does not exist." }
+      {
+        "id": "request-path",
+        "label": "Request path",
+        "focus": [
+          "user",
+          "web",
+          "queue",
+          "engine",
+          "postgres"
+        ],
+        "note": "One public game URL becomes a persisted run: validate, enqueue, execute in the worker, poll state back out of Postgres."
+      },
+      {
+        "id": "fixed-pipeline",
+        "label": "Fixed pipeline, chosen by code",
+        "focus": [
+          "engine",
+          "roblox-data",
+          "orchestrator",
+          "critic"
+        ],
+        "note": "A persisted state machine picks the top-level steps. No model can skip the mandatory data audit."
+      },
+      {
+        "id": "delegation",
+        "label": "Delegation and sources",
+        "focus": [
+          "orchestrator",
+          "data-agent",
+          "market-intelligence",
+          "providers"
+        ],
+        "note": "The orchestrator may call two sub-agents as tools; every tool call that returns real data writes an evidence record."
+      },
+      {
+        "id": "verification",
+        "label": "Verification and the gate",
+        "focus": [
+          "critic",
+          "engine",
+          "gate",
+          "postgres"
+        ],
+        "note": "The critic may hold or lower the rating, never raise it. FINALIZE refuses any report citing evidence that does not exist."
+      }
     ]
   },
   "components": [
     {
-      "id": "providers", "type": "external", "label": "Public sources",
+      "id": "providers",
+      "type": "external",
+      "label": "Public sources",
       "sublabel": "Roblox endpoints · YouTube via yt-dlp · web pages",
       "tag": "game-level data only",
-      "pos": [700, 60], "size": [830, 76],
+      "pos": [
+        400,
+        60
+      ],
+      "size": [
+        880,
+        76
+      ],
       "sources": [
-        { "path": "packages/sources/roblox/src/index.ts", "label": "roblox adapter" },
-        { "path": "packages/sources/youtube/src/index.ts", "label": "youtube adapter" },
-        { "path": "packages/sources/webpage/src/index.ts", "label": "webpage adapter" }
+        {
+          "path": "packages/sources/roblox/src/index.ts",
+          "label": "roblox adapter"
+        },
+        {
+          "path": "packages/sources/youtube/src/index.ts",
+          "label": "youtube adapter"
+        },
+        {
+          "path": "packages/sources/webpage/src/index.ts",
+          "label": "webpage adapter"
+        }
       ]
     },
-
     {
-      "id": "user", "type": "external", "label": "Analyst",
+      "id": "user",
+      "type": "external",
+      "label": "Analyst",
       "sublabel": "browser · one public game URL",
-      "pos": [60, 280], "size": [190, 76]
+      "pos": [
+        60,
+        270
+      ],
+      "size": [
+        200,
+        76
+      ]
     },
     {
-      "id": "roblox-data", "type": "backend", "label": "roblox-data",
+      "id": "roblox-data",
+      "type": "backend",
+      "label": "roblox-data",
       "sublabel": "mandatory audit, always first",
       "tag": "required",
-      "pos": [700, 280], "size": [190, 76],
-      "sources": [{ "path": "packages/modules/roblox-data/src/index.ts", "label": "roblox-data module" }]
-    },
-    {
-      "id": "data-agent", "type": "backend", "label": "data-agent",
-      "sublabel": "catalog + discovery charts",
-      "pos": [1020, 280], "size": [190, 76],
-      "sources": [{ "path": "packages/modules/data-agent/src/index.ts", "line": 19, "label": "system prompt" }]
-    },
-    {
-      "id": "market-intelligence", "type": "backend", "label": "market-intelligence",
-      "sublabel": "YouTube creator coverage",
-      "pos": [1340, 280], "size": [190, 76],
-      "sources": [{ "path": "packages/modules/market-intelligence/src/index.ts", "line": 26, "label": "system prompt" }]
-    },
-
-    {
-      "id": "web", "type": "frontend", "label": "apps/web",
-      "sublabel": "Next.js App Router",
-      "tag": ":3017",
-      "pos": [60, 490], "size": [190, 76],
-      "sources": [{ "path": "apps/web/app/api/runs/route.ts", "label": "POST /api/runs" }]
-    },
-    {
-      "id": "queue", "type": "messagebus", "label": "BullMQ on Redis",
-      "sublabel": "queue infrastructure only",
-      "tag": "no domain state",
-      "pos": [380, 490], "size": [190, 76],
-      "sources": [{ "path": "apps/worker/src/index.ts", "label": "worker entry" }]
-    },
-    {
-      "id": "engine", "type": "backend", "label": "packages/engine",
-      "sublabel": "persisted state machine",
-      "tag": "orchestration is code",
-      "pos": [700, 490], "size": [190, 76],
+      "pos": [
+        400,
+        270
+      ],
+      "size": [
+        200,
+        76
+      ],
       "sources": [
-        { "path": "packages/engine/src/index.ts", "label": "executeRun + registry" },
-        { "path": "packages/engine/src/stopping.ts", "label": "stopping rule" }
+        {
+          "path": "packages/modules/roblox-data/src/index.ts",
+          "label": "roblox-data module"
+        }
       ]
     },
     {
-      "id": "orchestrator", "type": "backend", "label": "orchestrator",
-      "sublabel": "forms the Thesis; may delegate",
-      "pos": [1020, 490], "size": [190, 76],
-      "sources": [{ "path": "packages/modules/orchestrator/src/index.ts", "line": 23, "label": "system prompt" }]
+      "id": "data-agent",
+      "type": "backend",
+      "label": "data-agent",
+      "sublabel": "catalog + discovery charts",
+      "pos": [
+        1080,
+        270
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/modules/data-agent/src/index.ts",
+          "line": 19,
+          "label": "system prompt"
+        }
+      ]
     },
     {
-      "id": "critic", "type": "backend", "label": "critic",
+      "id": "market-intelligence",
+      "type": "backend",
+      "label": "market-intelligence",
+      "sublabel": "YouTube creator coverage",
+      "pos": [
+        740,
+        270
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/modules/market-intelligence/src/index.ts",
+          "line": 26,
+          "label": "system prompt"
+        }
+      ]
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "apps/web",
+      "sublabel": "Next.js App Router",
+      "tag": ":3017",
+      "pos": [
+        60,
+        480
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/web/app/api/runs/route.ts",
+          "label": "POST /api/runs"
+        }
+      ]
+    },
+    {
+      "id": "queue",
+      "type": "messagebus",
+      "label": "BullMQ on Redis",
+      "sublabel": "queue infrastructure only",
+      "tag": "no domain state",
+      "pos": [
+        400,
+        480
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "apps/worker/src/index.ts",
+          "label": "worker entry"
+        }
+      ]
+    },
+    {
+      "id": "engine",
+      "type": "backend",
+      "label": "packages/engine",
+      "sublabel": "persisted state machine",
+      "tag": "orchestration is code",
+      "pos": [
+        740,
+        480
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/engine/src/index.ts",
+          "label": "executeRun + registry"
+        },
+        {
+          "path": "packages/engine/src/stopping.ts",
+          "label": "stopping rule"
+        }
+      ]
+    },
+    {
+      "id": "orchestrator",
+      "type": "backend",
+      "label": "orchestrator",
+      "sublabel": "forms the Thesis; may delegate",
+      "pos": [
+        1080,
+        480
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/modules/orchestrator/src/index.ts",
+          "line": 23,
+          "label": "system prompt"
+        }
+      ]
+    },
+    {
+      "id": "critic",
+      "type": "backend",
+      "label": "critic",
       "sublabel": "attacks the thesis",
       "tag": "may only lower",
-      "pos": [1340, 490], "size": [190, 76],
-      "sources": [{ "path": "packages/modules/critic/src/index.ts", "line": 11, "label": "system prompt" }]
+      "pos": [
+        1080,
+        690
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/modules/critic/src/index.ts",
+          "line": 11,
+          "label": "system prompt"
+        }
+      ]
     },
-
     {
-      "id": "postgres", "type": "database", "label": "PostgreSQL",
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL",
       "sublabel": "runs · steps · evidence · reports",
       "tag": "authoritative",
-      "pos": [380, 700], "size": [190, 76],
-      "sources": [{ "path": "packages/db/src/schema.ts", "label": "Drizzle schema" }]
+      "pos": [
+        60,
+        690
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/db/src/schema.ts",
+          "label": "Drizzle schema"
+        }
+      ]
     },
     {
-      "id": "gate", "type": "security", "label": "assertReportEvidence",
+      "id": "gate",
+      "type": "security",
+      "label": "assertReportEvidence",
       "sublabel": "FINALIZE · fail closed",
-      "pos": [700, 700], "size": [190, 76],
-      "sources": [{ "path": "packages/contracts/src/index.ts", "line": 194, "label": "evidence gate" }]
+      "pos": [
+        400,
+        690
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/contracts/src/index.ts",
+          "line": 194,
+          "label": "evidence gate"
+        }
+      ]
     },
     {
-      "id": "openrouter", "type": "external", "label": "OpenRouter",
-      "sublabel": "one shared RunBudget caps every agent loop in a run",
-      "pos": [1020, 700], "size": [510, 76],
-      "sources": [{ "path": "packages/agent-core/src/loop.ts", "label": "runAgentLoop" }]
+      "id": "openrouter",
+      "type": "external",
+      "label": "OpenRouter",
+      "sublabel": "LLM inference · one shared RunBudget",
+      "pos": [
+        740,
+        690
+      ],
+      "size": [
+        200,
+        76
+      ],
+      "sources": [
+        {
+          "path": "packages/agent-core/src/loop.ts",
+          "label": "runAgentLoop"
+        }
+      ]
     }
   ],
   "boundaries": [
-    { "kind": "region", "label": "packages/engine — fixed module order", "wraps": ["engine", "roblox-data", "orchestrator", "data-agent", "market-intelligence", "critic"] },
-    { "kind": "security-group", "label": "anti-hallucination gate of last resort", "wraps": ["gate"] }
+    {
+      "kind": "security-group",
+      "label": "anti-hallucination gate of last resort",
+      "wraps": [
+        "gate"
+      ]
+    }
   ],
   "connections": [
-    { "id": "submit", "from": "user", "to": "web", "label": "game URL", "variant": "emphasis" },
-    { "id": "enqueue", "from": "web", "to": "queue", "label": "enqueue job" },
-    { "id": "execute", "from": "queue", "to": "engine", "label": "executeRun(runId)", "variant": "emphasis" },
-    { "id": "collect-core", "from": "engine", "to": "roblox-data", "label": "1 · COLLECT_CORE" },
-    { "id": "plan", "from": "engine", "to": "orchestrator", "label": "2 · PLAN / EXECUTE" },
-    { "id": "delegate-data", "from": "orchestrator", "to": "data-agent", "label": "delegate as tool", "variant": "dashed" },
-    { "id": "delegate-market", "from": "orchestrator", "to": "market-intelligence", "label": "delegate as tool", "variant": "dashed" },
-    { "id": "critique", "from": "orchestrator", "to": "critic", "label": "3 · thesis + claims", "labelDy": -34 },
-    { "id": "route-loop", "from": "critic", "to": "orchestrator", "label": "objections → re-plan", "labelDy": 34 },
-    { "id": "audit-fetch", "from": "roblox-data", "to": "providers", "label": "public endpoints", "fromSide": "top", "toSide": "bottom" },
-    { "id": "data-fetch", "from": "data-agent", "to": "providers", "label": "tool calls → evidence", "fromSide": "top", "toSide": "bottom" },
-    { "id": "market-fetch", "from": "market-intelligence", "to": "providers", "label": "yt-dlp search", "fromSide": "top", "toSide": "bottom" },
-    { "id": "orchestrator-llm", "from": "orchestrator", "to": "openrouter", "label": "model turns", "fromSide": "bottom", "toSide": "top" },
-    { "id": "critic-llm", "from": "critic", "to": "openrouter", "label": "model turns", "variant": "dashed", "fromSide": "bottom", "toSide": "top" },
-    { "id": "persist", "from": "engine", "to": "postgres", "label": "runs · steps · evidence" },
-    { "id": "finalize", "from": "engine", "to": "gate", "label": "4 · FINALIZE", "variant": "security" },
-    { "id": "persist-report", "from": "gate", "to": "postgres", "label": "only real evidence ids", "variant": "security" },
-    { "id": "read-back", "from": "postgres", "to": "web", "label": "GET /api/runs/:id" }
+    {
+      "id": "submit",
+      "from": "user",
+      "to": "web",
+      "label": "game URL",
+      "variant": "emphasis",
+      "labelDy": 26
+    },
+    {
+      "id": "enqueue",
+      "from": "web",
+      "to": "queue",
+      "label": "enqueue job"
+    },
+    {
+      "id": "execute",
+      "from": "queue",
+      "to": "engine",
+      "label": "executeRun(runId)",
+      "variant": "emphasis",
+      "labelDy": -60,
+      "labelDx": -60
+    },
+    {
+      "id": "collect-core",
+      "from": "engine",
+      "to": "roblox-data",
+      "label": "1 · COLLECT_CORE"
+    },
+    {
+      "id": "plan",
+      "from": "engine",
+      "to": "orchestrator",
+      "label": "2 · PLAN / EXECUTE",
+      "labelDy": -70,
+      "labelDx": -60
+    },
+    {
+      "id": "delegate-data",
+      "from": "orchestrator",
+      "to": "data-agent",
+      "label": "delegate as tool",
+      "variant": "dashed"
+    },
+    {
+      "id": "delegate-market",
+      "from": "orchestrator",
+      "to": "market-intelligence",
+      "label": "delegate as tool",
+      "variant": "dashed"
+    },
+    {
+      "id": "critique",
+      "from": "orchestrator",
+      "to": "critic",
+      "label": "3 · thesis + claims",
+      "labelDx": -70,
+      "labelDy": 60
+    },
+    {
+      "id": "route-loop",
+      "from": "critic",
+      "to": "orchestrator",
+      "label": "objections → re-plan",
+      "labelDx": 80,
+      "labelDy": -20
+    },
+    {
+      "id": "audit-fetch",
+      "from": "roblox-data",
+      "to": "providers",
+      "label": "public endpoints",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "data-fetch",
+      "from": "data-agent",
+      "to": "providers",
+      "label": "tool calls → evidence",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "market-fetch",
+      "from": "market-intelligence",
+      "to": "providers",
+      "label": "yt-dlp search",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "orchestrator-llm",
+      "from": "orchestrator",
+      "to": "openrouter",
+      "label": "model turns"
+    },
+    {
+      "id": "critic-llm",
+      "from": "critic",
+      "to": "openrouter",
+      "variant": "dashed"
+    },
+    {
+      "id": "persist",
+      "from": "engine",
+      "to": "postgres",
+      "label": "runs · steps · evidence",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "finalize",
+      "from": "engine",
+      "to": "gate",
+      "label": "4 · FINALIZE",
+      "variant": "security"
+    },
+    {
+      "id": "persist-report",
+      "from": "gate",
+      "to": "postgres",
+      "label": "only real evidence ids",
+      "variant": "security"
+    },
+    {
+      "id": "read-back",
+      "from": "postgres",
+      "to": "web",
+      "label": "GET /api/runs/:id"
+    }
   ],
   "cards": [
-    { "dot": "cyan", "title": "Request path", "items": ["POST /api/runs validates input and snapshots an immutable profile onto the run", "BullMQ is queue infrastructure only; Postgres holds all durable state", "A finished run keeps its full agent trace at ?view=trajectory"] },
-    { "dot": "emerald", "title": "Orchestration is code, not a model", "items": ["A persisted state machine runs modules in a hardcoded order", "roblox-data always runs first and cannot be skipped", "The model plans only within a step, and may call two sub-agents as tools"] },
-    { "dot": "rose", "title": "What the pipeline refuses to do", "items": ["The critic may hold or lower the rating, never raise it", "keepKnownIds strips any cited id that has no persisted record", "assertReportEvidence throws rather than ship an unbacked claim", "A missing provider degrades loudly instead of fabricating a value"] }
+    {
+      "dot": "cyan",
+      "title": "Request path",
+      "items": [
+        "POST /api/runs validates input and snapshots an immutable profile onto the run",
+        "BullMQ is queue infrastructure only; Postgres holds all durable state",
+        "A finished run keeps its full agent trace at ?view=trajectory"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Orchestration is code, not a model",
+      "items": [
+        "A persisted state machine runs modules in a hardcoded order",
+        "roblox-data always runs first and cannot be skipped",
+        "The model plans only within a step, and may call two sub-agents as tools"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What the pipeline refuses to do",
+      "items": [
+        "The critic may hold or lower the rating, never raise it",
+        "keepKnownIds strips any cited id that has no persisted record",
+        "assertReportEvidence throws rather than ship an unbacked claim",
+        "A missing provider degrades loudly instead of fabricating a value"
+      ]
+    }
   ]
 }

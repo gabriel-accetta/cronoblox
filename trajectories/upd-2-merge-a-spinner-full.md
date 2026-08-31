@@ -2,16 +2,16 @@
 
 | | |
 | --- | --- |
-| Run id | `44805c7e-e129-4184-9771-234164477089` |
+| Run id | `386fc820-e20d-4a35-8b64-ab84c2104a72` — [open live](https://cronoblox.duckdns.org/runs/386fc820-e20d-4a35-8b64-ab84c2104a72?view=trajectory) |
 | Input | https://www.roblox.com/games/101396571928321/g |
 | Profile | Full (full), effort medium, model `deepseek/deepseek-v4-flash-0731` |
 | Final state | **COMPLETED** |
 | Agents involved | roblox-data, orchestrator, data-agent, market-intelligence, critic |
-| Model turns | 11 |
-| Tool calls | 15 (budget 18) |
-| Evidence records | 51 across 38 distinct sources |
+| Model turns | 12 |
+| Tool calls | 16 (budget 25) |
+| Evidence records | 48 across 36 distinct sources |
 | Rating | MODERATE → **MODERATE** (verification: completed) |
-| Runtime / cost | 207.8s / $0.004223 |
+| Runtime / cost | 107.6s / $0.003926 |
 
 Private model reasoning is never persisted or shown. Timestamps are offsets from run creation.
 
@@ -21,85 +21,103 @@ Private model reasoning is never persisted or shown. Timestamps are offsets from
 
 Investigation queued
 
-**+00:18** · `engine` · *COLLECT_CORE*
+**+01:49** · `engine` · *COLLECT_CORE*
 
 Resolving game identity and collecting current Roblox evidence
 
-**+00:19** · `roblox-data` · *completed*
+**+01:50** · `roblox-data` · *completed*
 
 [⭐UPD 2 ] Merge a Spinner! resolved and validated
 
-**+00:19** · `engine` · *PLAN*
+**+01:50** · `engine` · *PLAN*
 
 Deciding how much research is worth delegating
 
-**+00:19** · `engine` · *EXECUTE*
+**+01:50** · `engine` · *EXECUTE*
 
 Orchestrator researching and delegating to sub-agents as needed
 
-**+00:19** · `orchestrator` · *llm_call*
+**+01:50** · `orchestrator` · *llm_call*
 
 orchestrator is waiting for the model (turn 1)
 
-**+00:26** · `orchestrator` · *llm_result*
+**+01:54** · `orchestrator` · *llm_result*
 
-orchestrator's model replied in 4.6s (turn 1)
+orchestrator's model replied in 4.7s (turn 1)
 
-> 4.6s · 2144 in / 411 out tokens
+> 4.7s · 2140 in / 506 out tokens
 
-**+00:26** · `orchestrator` · *tool_call*
+**+01:54** · `orchestrator` · *tool_call*
 
-orchestrator called call_data_agent — Comparable Roblox tycoon/merge games: their concurrent player and visit trajectories, and whether Merge a Spinner by Fl…
+orchestrator called call_data_agent — Compare Merge a Spinner to successful Roblox merge/tycoon/idle games (Merge Simulator, Merge Mansion-style, Blox Fruits…
 
 ```json
 {
-  "focus": "Comparable Roblox tycoon/merge games: their concurrent player and visit trajectories, and whether Merge a Spinner by Flapjack's Games is trending up or flat relative to its genre peers. Also whether Flapjack's Games has a network of games that drives cross-promotion."
+  "focus": "Compare Merge a Spinner to successful Roblox merge/tycoon/idle games (Merge Simulator, Merge Mansion-style, Blox Fruits-caliber comparables). Look for current trending charts, genre ceiling, and how concurrent players vs lifetime visits signal breakout for merge-type games."
 }
 ```
 
-**+00:26** · `data-agent` · *llm_call*
+**+01:54** · `data-agent` · *llm_call*
 
 data-agent is waiting for the model (turn 1)
 
-**+00:29** · `data-agent` · *llm_result*
+**+01:56** · `data-agent` · *llm_result*
 
-data-agent's model replied in 3.9s (turn 1)
+data-agent's model replied in 1.7s (turn 1)
 
-> 3.9s · 1112 in / 232 out tokens
+> 1.7s · 1117 in / 156 out tokens
 
-**+00:29** · `data-agent` · *tool_call*
+**+01:56** · `data-agent` · *tool_call*
 
-data-agent called roblox_search_peers — merge tycoon
-
-```json
-{
-  "query": "merge tycoon"
-}
-```
-
-**+00:30** · `data-agent` · *tool_result*
-
-data-agent's roblox_search_peers finished in 0.2s
-
-> 0.2s
-
-**+00:30** · `data-agent` · *tool_call*
-
-data-agent called roblox_search_peers — Flapjack's Games
+data-agent called roblox_search_peers — merge idle tycoon
 
 ```json
 {
-  "query": "Flapjack's Games"
+  "query": "merge idle tycoon"
 }
 ```
 
-**+00:30** · `data-agent` · *tool_result*
+**+01:56** · `data-agent` · *tool_result*
 
-data-agent's roblox_search_peers finished in 0.2s
+data-agent's roblox_search_peers finished in 0.1s
 
-> 0.2s
+> 0.1s
 
-**+00:30** · `data-agent` · *tool_call*
+**+01:56** · `data-agent` · *tool_call*
+
+data-agent called roblox_search_peers — merge simulator
+
+```json
+{
+  "query": "merge simulator"
+}
+```
+
+**+01:58** · `data-agent` · *tool_error* ⚠️
+
+data-agent's roblox_search_peers call failed: Roblox returned 429
+
+**+01:58** · `data-agent` · *tool_call*
+
+data-agent called roblox_list_trending_charts
+
+**+01:58** · `data-agent` · *tool_result*
+
+data-agent's roblox_list_trending_charts finished in 0.6s
+
+> 0.6s
+
+**+01:58** · `data-agent` · *llm_call*
+
+data-agent is waiting for the model (turn 2)
+
+**+02:01** · `data-agent` · *llm_result*
+
+data-agent's model replied in 2.5s (turn 2)
+
+> 2.5s · 2658 in / 314 out tokens
+
+**+02:01** · `data-agent` · *tool_call*
 
 data-agent called roblox_search_peers — Merge a Spinner
 
@@ -109,115 +127,99 @@ data-agent called roblox_search_peers — Merge a Spinner
 }
 ```
 
-**+00:30** · `data-agent` · *tool_result*
+**+02:02** · `data-agent` · *tool_error* ⚠️
 
-data-agent's roblox_search_peers finished in 0.1s
+data-agent's roblox_search_peers call failed: Roblox returned 429
 
-> 0.1s
+**+02:02** · `data-agent` · *tool_refused* ⚠️
 
-**+00:30** · `data-agent` · *tool_call*
+data-agent's roblox_search_peers call was refused — tool failed repeatedly
 
-data-agent called roblox_list_trending_charts
+**+02:02** · `data-agent` · *tool_refused* ⚠️
 
-**+00:31** · `data-agent` · *tool_result*
+data-agent's roblox_search_peers call was refused — tool failed repeatedly
 
-data-agent's roblox_list_trending_charts finished in 0.7s
+**+02:02** · `data-agent` · *llm_call*
 
-> 0.7s
+data-agent is waiting for the model (turn 3)
 
-**+00:31** · `data-agent` · *llm_call*
+**+02:05** · `data-agent` · *llm_result*
 
-data-agent is waiting for the model (turn 2)
+data-agent's model replied in 2.5s (turn 3)
 
-**+00:34** · `data-agent` · *llm_result*
+> 2.5s · 4381 in / 318 out tokens
 
-data-agent's model replied in 3.4s (turn 2)
+**+02:05** · `data-agent` · *tool_call*
 
-> 3.4s · 2870 in / 374 out tokens
-
-**+00:34** · `data-agent` · *tool_call*
-
-data-agent called roblox_search_peers — merge
+data-agent called roblox_get_chart_games — trending
 
 ```json
 {
-  "query": "merge"
+  "sortId": "trending"
 }
 ```
 
-**+00:34** · `data-agent` · *tool_result*
+**+02:05** · `data-agent` · *tool_error* ⚠️
 
-data-agent's roblox_search_peers finished in 0.2s
+data-agent's roblox_get_chart_games call failed: Roblox returned 404
 
-> 0.2s
+**+02:05** · `data-agent` · *tool_call*
 
-**+00:34** · `data-agent` · *tool_call*
-
-data-agent called roblox_search_peers — tycoon
+data-agent called roblox_get_chart_games — popular
 
 ```json
 {
-  "query": "tycoon"
+  "sortId": "popular"
 }
 ```
 
-**+00:34** · `data-agent` · *tool_result*
+**+02:05** · `data-agent` · *tool_error* ⚠️
 
-data-agent's roblox_search_peers finished in 0.1s
+data-agent's roblox_get_chart_games call failed: Roblox returned 404
 
-> 0.1s
+**+02:05** · `data-agent` · *finalizing*
 
-**+00:34** · `data-agent` · *tool_refused* ⚠️
+data-agent is wrapping up — model turn limit reached (4 turns)
 
-data-agent's roblox_search_peers call was refused — agent tool-call allowance reached (6/6 calls)
+> reason: model turn limit reached (4 turns)
 
-**+00:34** · `data-agent` · *tool_refused* ⚠️
+**+02:07** · `data-agent` · *llm_result*
 
-data-agent's roblox_search_peers call was refused — agent tool-call allowance reached (6/6 calls)
+data-agent's model replied in 1.7s (turn 4)
 
-**+00:34** · `data-agent` · *finalizing*
+> 1.7s · 4042 in / 82 out tokens
 
-data-agent is wrapping up — agent tool-call allowance reached (6/6 calls)
-
-> reason: agent tool-call allowance reached (6/6 calls)
-
-**+00:39** · `data-agent` · *llm_result*
-
-data-agent's model replied in 4.8s (turn 3)
-
-> 4.8s · 2939 in / 357 out tokens
-
-**+00:39** · `data-agent` · *submit*
+**+02:07** · `data-agent` · *submit*
 
 data-agent submitted its findings
 
-**+00:39** · `orchestrator` · *tool_result*
+**+02:07** · `orchestrator` · *tool_result*
 
-orchestrator's call_data_agent finished in 13.7s
+orchestrator's call_data_agent finished in 12.2s
 
-> 13.7s
+> 12.2s
 
-**+00:39** · `orchestrator` · *tool_call*
+**+02:07** · `orchestrator` · *tool_call*
 
-orchestrator called call_socials_agent — Real-world attention on "Merge a Spinner" Roblox game: YouTube/TikTok coverage, influencer traffic, and creator diversi…
+orchestrator called call_socials_agent — Research real-world and YouTube/creator attention for "Merge a Spinner" and merge-spinner-style Roblox games. Look for …
 
 ```json
 {
-  "focus": "Real-world attention on \"Merge a Spinner\" Roblox game: YouTube/TikTok coverage, influencer traffic, and creator diversity around it."
+  "focus": "Research real-world and YouTube/creator attention for \"Merge a Spinner\" and merge-spinner-style Roblox games. Look for whether creators are covering it, creator diversity, and any virality signals around the merge-idle mechanics."
 }
 ```
 
-**+00:39** · `market-intelligence` · *llm_call*
+**+02:07** · `market-intelligence` · *llm_call*
 
 market-intelligence is waiting for the model (turn 1)
 
-**+00:42** · `market-intelligence` · *llm_result*
+**+02:08** · `market-intelligence` · *llm_result*
 
-market-intelligence's model replied in 2.7s (turn 1)
+market-intelligence's model replied in 1.7s (turn 1)
 
-> 2.7s · 1059 in / 199 out tokens
+> 1.7s · 1081 in / 110 out tokens
 
-**+00:42** · `market-intelligence` · *tool_call*
+**+02:08** · `market-intelligence` · *tool_call*
 
 market-intelligence called youtube_search — Merge a Spinner Roblox
 
@@ -227,242 +229,253 @@ market-intelligence called youtube_search — Merge a Spinner Roblox
 }
 ```
 
-**+00:44** · `market-intelligence` · *tool_result*
-
-market-intelligence's youtube_search finished in 2.0s
-
-> 2.0s
-
-**+00:44** · `market-intelligence` · *tool_call*
-
-market-intelligence called youtube_search — Merge a Spinner gameplay
-
-```json
-{
-  "query": "Merge a Spinner gameplay"
-}
-```
-
-**+00:47** · `market-intelligence` · *tool_result*
-
-market-intelligence's youtube_search finished in 2.4s
-
-> 2.4s
-
-**+00:47** · `market-intelligence` · *tool_call*
-
-market-intelligence called youtube_search — Merge a Spinner Roblox review tycoon
-
-```json
-{
-  "query": "Merge a Spinner Roblox review tycoon"
-}
-```
-
-**+00:48** · `market-intelligence` · *tool_result*
-
-market-intelligence's youtube_search finished in 1.6s
-
-> 1.6s
-
-**+00:48** · `market-intelligence` · *llm_call*
-
-market-intelligence is waiting for the model (turn 2)
-
-**+00:53** · `market-intelligence` · *llm_result*
-
-market-intelligence's model replied in 4.8s (turn 2)
-
-> 4.8s · 3775 in / 453 out tokens
-
-**+00:53** · `market-intelligence` · *tool_call*
-
-market-intelligence called youtube_search — Merge a Spinner Roblox walkthrough coolmath
-
-```json
-{
-  "query": "Merge a Spinner Roblox walkthrough coolmath"
-}
-```
-
-**+00:57** · `market-intelligence` · *tool_result*
+**+02:10** · `market-intelligence` · *tool_result*
 
 market-intelligence's youtube_search finished in 1.5s
 
 > 1.5s
 
-**+00:57** · `market-intelligence` · *tool_call*
+**+02:10** · `market-intelligence` · *tool_call*
 
-market-intelligence called youtube_search — eXn merge a spinner roblox winning
+market-intelligence called youtube_search — Merge a Spinner Roblox gameplay
 
 ```json
 {
-  "query": "eXn merge a spinner roblox winning"
+  "query": "Merge a Spinner Roblox gameplay"
 }
 ```
 
-**+00:59** · `market-intelligence` · *tool_result*
+**+02:11** · `market-intelligence` · *tool_result*
 
-market-intelligence's youtube_search finished in 2.0s
+market-intelligence's youtube_search finished in 1.4s
 
-> 2.0s
+> 1.4s
 
-**+00:59** · `market-intelligence` · *llm_call*
+**+02:11** · `market-intelligence` · *llm_call*
+
+market-intelligence is waiting for the model (turn 2)
+
+**+02:14** · `market-intelligence` · *llm_result*
+
+market-intelligence's model replied in 2.5s (turn 2)
+
+> 2.5s · 2864 in / 261 out tokens
+
+**+02:14** · `market-intelligence` · *tool_call*
+
+market-intelligence called youtube_search — spinner merge idle Roblox tycoon
+
+```json
+{
+  "query": "spinner merge idle Roblox tycoon"
+}
+```
+
+**+02:15** · `market-intelligence` · *tool_result*
+
+market-intelligence's youtube_search finished in 1.3s
+
+> 1.3s
+
+**+02:15** · `market-intelligence` · *tool_call*
+
+market-intelligence called youtube_search — Merge spinners Roblox best spinner
+
+```json
+{
+  "query": "Merge spinners Roblox best spinner"
+}
+```
+
+**+02:17** · `market-intelligence` · *tool_result*
+
+market-intelligence's youtube_search finished in 1.5s
+
+> 1.5s
+
+**+02:17** · `market-intelligence` · *llm_call*
 
 market-intelligence is waiting for the model (turn 3)
 
-**+01:11** · `market-intelligence` · *llm_result*
+**+02:23** · `market-intelligence` · *llm_result*
 
-market-intelligence's model replied in 12.1s (turn 3)
+market-intelligence's model replied in 6.1s (turn 3)
 
-> 12.1s · 5700 in / 595 out tokens
+> 6.1s · 4922 in / 664 out tokens
 
-**+01:11** · `market-intelligence` · *tool_call*
+**+02:23** · `market-intelligence` · *tool_call*
 
-market-intelligence called fetch_page — https://www.youtube.com/watch?v=SMIo_9gYg8I — Verify the eXn video is genuinely about the Roblox game Merge a Spinner a…
+market-intelligence called fetch_page — https://www.youtube.com/watch?v=SMIo_9gYg8I — Verify this 91k-view video is actually covering the "Merge a Spinner" Rob…
 
 ```json
 {
   "url": "https://www.youtube.com/watch?v=SMIo_9gYg8I",
-  "reason": "Verify the eXn video is genuinely about the Roblox game Merge a Spinner and get channel/engagement context."
+  "reason": "Verify this 91k-view video is actually covering the \"Merge a Spinner\" Roblox game"
 }
 ```
 
-**+01:12** · `market-intelligence` · *tool_result*
+**+02:24** · `market-intelligence` · *tool_result*
 
-market-intelligence's fetch_page finished in 0.8s
+market-intelligence's fetch_page finished in 0.9s
 
-> 0.8s
+> 0.9s
 
-**+01:12** · `market-intelligence` · *tool_refused* ⚠️
+**+02:24** · `market-intelligence` · *tool_call*
 
-market-intelligence's fetch_page call was refused — agent tool-call allowance reached (6/6 calls)
-
-**+01:12** · `market-intelligence` · *finalizing*
-
-market-intelligence is wrapping up — agent tool-call allowance reached (6/6 calls)
-
-> reason: agent tool-call allowance reached (6/6 calls)
-
-**+02:25** · `market-intelligence` · *llm_result*
-
-market-intelligence's model replied in 69.2s (turn 4)
-
-> 69.2s · 5476 in / 856 out tokens
-
-**+02:25** · `market-intelligence` · *submit*
-
-market-intelligence submitted its findings
-
-**+02:25** · `orchestrator` · *tool_result*
-
-orchestrator's call_socials_agent finished in 99.3s
-
-> 99.3s
-
-**+02:25** · `orchestrator` · *llm_call*
-
-orchestrator is waiting for the model (turn 2)
-
-**+02:55** · `orchestrator` · *llm_result*
-
-orchestrator's model replied in 27.7s (turn 2)
-
-> 27.7s · 5552 in / 2059 out tokens
-
-**+02:55** · `orchestrator` · *submit*
-
-orchestrator submitted its findings
-
-**+02:55** · `engine` · *RECORD*
-
-Normalizing and validating evidence gathered so far
-
-**+02:55** · `engine` · *SYNTHESIZE*
-
-Initial thesis formed — handing off for verification
-
-**+02:55** · `engine` · *CRITIQUE*
-
-Challenging the thesis for unsupported claims and alternative explanations
-
-**+02:55** · `critic` · *llm_call*
-
-critic is waiting for the model (turn 1)
-
-**+03:22** · `critic` · *llm_result*
-
-critic's model replied in 24.3s (turn 1)
-
-> 24.3s · 6500 in / 1819 out tokens
-
-**+03:22** · `critic` · *tool_call*
-
-critic called fetch_page — https://games.roblox.com/v1/games?universeIds=10526166728 — Verify the core Roblox API numbers (visits, favorites, up/d…
+market-intelligence called youtube_search — Merge a Spinner update rebirth Roblox 2025
 
 ```json
 {
-  "url": "https://games.roblox.com/v1/games?universeIds=10526166728",
-  "reason": "Verify the core Roblox API numbers (visits, favorites, up/down votes, like ratio) that back claims s1 and r1."
+  "query": "Merge a Spinner update rebirth Roblox 2025"
 }
 ```
 
-**+03:22** · `critic` · *tool_result*
+**+02:25** · `market-intelligence` · *tool_result*
 
-critic's fetch_page finished in 0.2s
+market-intelligence's youtube_search finished in 1.4s
 
-> 0.2s
+> 1.4s
 
-**+03:22** · `critic` · *llm_call*
+**+02:25** · `market-intelligence` · *finalizing*
+
+market-intelligence is wrapping up — model turn limit reached (4 turns)
+
+> reason: model turn limit reached (4 turns)
+
+**+02:31** · `market-intelligence` · *llm_result*
+
+market-intelligence's model replied in 5.8s (turn 4)
+
+> 5.8s · 5708 in / 531 out tokens
+
+**+02:31** · `market-intelligence` · *submit*
+
+market-intelligence submitted its findings
+
+**+02:31** · `orchestrator` · *tool_result*
+
+orchestrator's call_socials_agent finished in 24.1s
+
+> 24.1s
+
+**+02:31** · `orchestrator` · *llm_call*
+
+orchestrator is waiting for the model (turn 2)
+
+**+02:43** · `orchestrator` · *llm_result*
+
+orchestrator's model replied in 12.7s (turn 2)
+
+> 12.7s · 5523 in / 1659 out tokens
+
+**+02:43** · `orchestrator` · *submit*
+
+orchestrator submitted its findings
+
+**+02:44** · `engine` · *RECORD*
+
+Normalizing and validating evidence gathered so far
+
+**+02:44** · `engine` · *SYNTHESIZE*
+
+Initial thesis formed — handing off for verification
+
+**+02:44** · `engine` · *CRITIQUE*
+
+Challenging the thesis for unsupported claims and alternative explanations
+
+**+02:44** · `critic` · *llm_call*
+
+critic is waiting for the model (turn 1)
+
+**+03:08** · `critic` · *llm_result*
+
+critic's model replied in 24.2s (turn 1)
+
+> 24.2s · 6488 in / 3183 out tokens
+
+**+03:08** · `critic` · *tool_call*
+
+critic called get_evidence_by_id — ev_6e06d999938445fabff35bd1a6ce1e0e
+
+```json
+{
+  "evidence_id": "ev_6e06d999938445fabff35bd1a6ce1e0e"
+}
+```
+
+**+03:08** · `critic` · *tool_result*
+
+critic's get_evidence_by_id finished in 0.0s
+
+> 0.0s
+
+**+03:08** · `critic` · *tool_call*
+
+critic called get_evidence_by_id — ev_9eb2f0cdbaa84494a0ce61441e9d2644
+
+```json
+{
+  "evidence_id": "ev_9eb2f0cdbaa84494a0ce61441e9d2644"
+}
+```
+
+**+03:08** · `critic` · *tool_result*
+
+critic's get_evidence_by_id finished in 0.0s
+
+> 0.0s
+
+**+03:08** · `critic` · *llm_call*
 
 critic is waiting for the model (turn 2)
 
-**+03:46** · `critic` · *llm_result*
+**+03:37** · `critic` · *llm_result*
 
-critic's model replied in 21.7s (turn 2)
+critic's model replied in 28.9s (turn 2)
 
-> 21.7s · 8809 in / 2167 out tokens
+> 28.9s · 10156 in / 3754 out tokens
 
-**+03:46** · `critic` · *submit*
+**+03:37** · `critic` · *submit*
 
 critic submitted its findings
 
-**+03:46** · `engine` · *ROUTE*
+**+03:37** · `engine` · *ROUTE*
 
 Resolving critic objections and applying the stopping rule
 
-**+03:46** · `critic` · *resolved*
+**+03:37** · `critic` · *resolved*
 
 Critic review held the rating — the evidence survived verification
 
-**+03:46** · `engine` · *FINALIZE*
+**+03:37** · `engine` · *FINALIZE*
 
 Building the structured, evidence-linked report
 
-**+03:46** · `engine` · *COMPLETED*
+**+03:37** · `engine` · *COMPLETED*
 
 Investigation complete — the report is ready
 
 ## Final report
 
-**MODERATE** — Strong quality and 6.6K CCU but thin creator attention and no top-tier coverage yet cap breakout at moderate.
+**MODERATE** — Solid 6k concurrent base and 92% like ratio, but no title-specific virality halo yet.
 
 ### Supporting claims
 
-- Merge a Spinner! shows strong player-quality signals with 6,624 concurrent players and a 92.1% like ratio. — *2 evidence record(s): ev_02fce0240ce3488d88575cfa1eb692ac, ev_7cccbda5de2c44c7b443ace2210fd4ca*
-- Current attention is driven by mid-tier YouTubers, with eXn and Wilco X videos drawing roughly 91k-98k views each. — *2 evidence record(s): ev_e76ad6d210d44df7bdf6487518f72e4c, ev_315c02ea611c4361818b59fc92440c0b*
-- A genuine organic long-tail of small creators (Superlex Plays, Derek Farley, TheBoyWhoLovesToCraft, VShido) covers the game, indicating self-sustaining player interest. — *4 evidence record(s): ev_62d375b7cbd24f08897f7422355adab0, ev_2fc45dc044684f62a9a0cb6339b81d0f, ev_ec7994ce52264ffbab63fad15a3da0d3, ev_a64aee1a959a41488316ea0b360c779d*
-- The game runs an active update cadence ("UPD 2") that supports ongoing re-engagement and future content hooks. — *1 evidence record(s): ev_b8fb4ae802834c75910940dd59d3add3*
+- The game sustains a healthy 6,014 concurrent players, indicating an active live base worth scaling. — *1 evidence record(s): ev_ff62196a686a4ef3acc01e00154db2b9*
+- A 92.1% like ratio on 3.4M visits signals strong player satisfaction and healthy early engagement. — *2 evidence record(s): ev_5a38a2c7426d4dfd9a59b83435328a8e, ev_364f526ef4ce4217bb35aea5694952ec*
+- The spinner-merge genre has a massive YouTube halo, with adjacent titles drawing 890k to 2.86M views. — *3 evidence record(s): ev_888d2b8fb25643c3b4dc48ea24d99a19, ev_61e21f84fd634945a7c62732e46977fb, ev_63b8cf474f244bdfa4570d4584d9ef37*
+- Direct creator coverage of Merge a Spinner is moderate and concentrated in small-to-mid channels, with no household-name creator dedicated to this title. — *2 evidence record(s): ev_c6b7420455334e29809f3fc2fe82e8db, ev_f1ff14e814594e138730a0079721ba10*
+- The creator base is genuinely diverse across regions and content types, giving room to cultivate niche coverage rather than relying on one star. — *2 evidence record(s): ev_fda2eb19e1db4982b404d9ab36ee3bda, ev_aec0e5deea224afe9024660aa553a9b7*
 
 ### Risk claims
 
-- Lifetime reach is still modest at 3.42M visits and only 2.56 favorites per 1,000 visits. — *2 evidence record(s): ev_39651b2ae0d74489afd0b7bf79e0fa99, ev_7bb155a85f1e47d68280960914cbea60*
-- No top-tier influencer has covered this game — the biggest reach on similar merge titles (e.g., SSundee's 339k views) went elsewhere, capping the viral ceiling without outreach. — *1 evidence record(s): ev_0461b6a948594caab92b32c19e6a21e7*
-- Catalog and trending data returned no comparable-peer or momentum signal, so whether this game is gaining or fading relative to genre peers remains unverified. — *2 evidence record(s): ev_c918a3fccef4437c81b24a9529bd3ead, ev_8645834ca4c94c40bea7ec54e01f983d*
+- The strongest spinner-merge views attach to adjacent/competing titles rather than this specific game, so the genre halo may not transfer to your title. — *3 evidence record(s): ev_888d2b8fb25643c3b4dc48ea24d99a19, ev_61e21f84fd634945a7c62732e46977fb, ev_63b8cf474f244bdfa4570d4584d9ef37*
+- Favorites per 1,000 visits is modest at 2.6, and the snapshot offers no historical growth data to confirm a breakout trajectory. — *1 evidence record(s): ev_a6cb0c6e7fe3445daac788f8459756e1*
+- A meaningful share of attention is script/exploit content, which can signal bot and cheat pressure rather than organic demand. — *2 evidence record(s): ev_dd3eb6ae9f8145ab843f2a68c49601f1, ev_955b9561225742c993aebb6d53145946*
 
 ### Critic objections
 
-- **[low]** The 92.1% like ratio (ev_7cccbda5de2c44c7b443ace2210fd4ca) is derived from ev_b8fb4 (identity), ev_02fce (CCU), and ev_39651 (visits/favorites), none of which expose up_votes/down_votes in their stored observations. The ratio is plausibly computed from the raw file (raw/roblox-core.json), but the derivation lineage as recorded doesn't make the vote counts independently checkable from the cited records. This is a transparency nit, not a data error.
-- **[low]** s4's 'active update cadence' claim rests solely on the game name containing '[]UPD 2]' (ev_b8fb4). The name only evidences the game has reached a second update iteration; it does not by itself substantiate an ongoing, currently-active cadence at observation time. The supporting facts are thin, but since s4 is used only to contextualize the recommendation (content drops), it does not drive the rating.
-- **[low]** s3 infers 'self-sustaining player interest' from four tiny-channel videos (6 to 635 views, ev_62d375, ev_2fc45, ev_ec7994, ev_a64aee1). The videos do demonstrate a small-creator long-tail exists, but 'self-sustaining interest' is an interpretive leap from four near-zero-view uploads alone. This supports the qualitative coverage picture without boosting any numeric claim, so it does not upset the moderate rating.
-- **[low]** r2's 'no top-tier influencer has covered this game' is an absence claim anchored by ev_0461, which documents SSundee's 339K-view coverage of a different title (Merge a Tank), not this game. The video correctly shows where big merge-cover reach flows, but it cannot by itself confirm this game lacks top-tier coverage beyond what the limited YouTube search returned. The report already characterizes coverage as mid-tier/organic and the lingering uncertainty is part of why MODERATE (not higher) is appropriate, so this is a noted caveat rather than a rating-changer.
+- **[medium]** The 92.1% like-ratio has non-transparent provenance and is over-interpreted. The derived ratio's stated derived_from records (ev_6e06d999 identity, ev_ff62196a concurrency, ev_364f526 visits/favorites) contain no up_votes/down_votes values, so the vote-level source of the ratio is not verifiable from the record. Moreover, c2 presents '92.1% like ratio on 3.4M visits signals strong player satisfaction': 3.4M is lifetime visits unrelated to the ratio, and a ~92% like ratio is near-baseline for Roblox rather than a standout satisfaction outlier, so the claim overstates what this metric conveys.
+- **[low]** c5 overclaims 'genuinely diverse across regions and content types' on the basis of only two cited videos with negligible reach (Rudra Marwar, 2 views; Superlex Plays, 635 views). Two tiny-view uploads do not establish regional/content diversity; the claim exceeds what the cited evidence can support, though it is a supporting claim with limited effect on the overall rating.
+- **[low]** The breakout thesis rests almost entirely on a single-concurrency snapshot (no historical trend) plus a YouTube halo that demonstrably feeds OTHER games. r2 and r1 honestly flag both, so the hedging is sound; this is a boundary condition that keeps the rating at MODERATE rather than HIGH, not a basis for downgrade.
