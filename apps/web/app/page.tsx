@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ChevronDown, CircleDot, Clock3, LockKeyhole, Radar, ShieldCheck, Sparkles } from "lucide-react";
 import type { Effort, RunSummary, UserMode } from "@cronoblox/contracts";
+import { IntegrationCard } from "@/components/integration-card";
 
 const audits = [
   { icon: CircleDot, label: "Roblox data", detail: "Identity, live engagement, votes & activity", required: true },
@@ -61,6 +62,7 @@ export default function HomePage() {
           <div className="hero-copy">
             <h1>Find the signal<br />before the <em>hype.</em></h1>
             <p className="lede">Cronoblox investigates one Roblox game, tests the breakout thesis, and shows every piece of evidence behind the call.</p>
+            <IntegrationCard gameUrl={url} />
           </div>
         </div>
 

@@ -81,13 +81,19 @@ export function describeToolArgs(args: unknown): string | null {
 export function emitAgentEvent(context: ModuleContext, agentName: string, event: AgentEvent): Promise<void> | void {
   switch (event.type) {
     case "llm_call":
-      return event.forced ? context.emit("info", `${agentName}.finalizing`, `${agentName} is wrapping up — ${event.forcedReason ?? "a conclusion is required"}`, { detail: `finalizing — ${event.forcedReason ?? "a conclusion is required"}`, reason: event.forcedReason ?? null }) : undefined;
+      return context.emit("info", `${agentName}.${event.forced ? "finalizing" : "llm_call"}`, event.forced ? `${agentName} is wrapping up — ${event.forcedReason ?? "a conclusion is required"}` : `${agentName} is waiting for the model (turn ${event.iteration})`, { iteration: event.iteration, reason: event.forcedReason ?? null });
+    case "llm_result":
+      return context.emit("info", `${agentName}.llm_result`, `${agentName}'s model replied in ${(event.durationMs / 1000).toFixed(1)}s (turn ${event.iteration})`, { iteration: event.iteration, duration_ms: event.durationMs, prompt_tokens: event.promptTokens, completion_tokens: event.completionTokens, reasoning_tokens: event.reasoningTokens });
+    case "llm_error":
+      return context.emit("warning", `${agentName}.llm_error`, `${agentName}: ${event.detail}`, { iteration: event.iteration, duration_ms: event.durationMs });
     case "tool_call": {
       const detail = describeToolArgs(event.args);
       return context.emit("info", `${agentName}.tool_call`, detail ? `${agentName} called ${event.name} — ${detail}` : `${agentName} called ${event.name}`, { tool: event.name, detail, args: event.args });
     }
     case "tool_error":
       return context.emit("warning", `${agentName}.tool_error`, `${agentName}'s ${event.name} call failed: ${event.detail}`, { tool: event.name, detail: `failed — ${event.detail}` });
+    case "tool_result":
+      return context.emit("info", `${agentName}.tool_result`, `${agentName}'s ${event.name} finished in ${(event.durationMs / 1000).toFixed(1)}s`, { tool: event.name, duration_ms: event.durationMs, detail: `finished in ${(event.durationMs / 1000).toFixed(1)}s` });
     case "tool_refused":
       return context.emit("warning", `${agentName}.tool_refused`, `${agentName}'s ${event.name} call was refused — ${event.reason}`, { tool: event.name, detail: `refused — ${event.reason}` });
     case "submit":
@@ -132,7 +138,7 @@ export function createYouTubeSearchTool(runtime: ToolRuntime): AgentTool<{ query
     parameters: z.object({ query: z.string().min(1) }),
     externalCalls: 1,
     async execute({ query }) {
-      const videos = await youtube.search(query, runtime.signal);
+      const videos = await youtube.search(query, runtime.signal, runtime.maxSearchResults);
       await runtime.saveRawArtifact("youtube", `search:${query}`, videos);
       const observed = runtime.now().toISOString();
       const items = videos.slice(0, runtime.maxSearchResults).map((item) => {

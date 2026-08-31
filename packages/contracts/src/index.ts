@@ -40,6 +40,18 @@ export const EvidenceSchema = z.object({
 });
 export type Evidence = z.infer<typeof EvidenceSchema>;
 
+/** Self-contained public tool results. They are observations, never worker reports. */
+export const PublicToolResultSchema = z.object({
+  status: z.enum(["completed", "degraded"]),
+  observed_at: z.string().datetime(),
+  data: z.record(z.unknown()),
+  evidence: z.array(EvidenceSchema),
+  warnings: z.array(z.string()),
+  cached: z.boolean(),
+  model_calls: z.literal(0),
+});
+export type PublicToolResult = z.infer<typeof PublicToolResultSchema>;
+
 export const ModuleMetricsSchema = z.object({
   duration_ms: z.number().nonnegative(),
   external_calls: z.number().int().nonnegative(),
@@ -83,6 +95,8 @@ export const ProfileSnapshotSchema = z.object({
   enabled_tools: z.array(z.string()),
   module_versions: z.record(z.string(), z.string()),
   model: z.string(),
+  /** Explicit model reasoning when supported; omitted on legacy/unknown model snapshots. */
+  reasoning_effort: z.enum(["low", "medium", "high"]).optional(),
   effort: EffortSchema.default("medium"),
   limits: z.object({
     max_iterations: z.number().int().positive(),
@@ -146,7 +160,7 @@ export const ReportSchema = z.object({
   })),
   supporting_claims: z.array(ClaimSchema),
   risk_claims: z.array(ClaimSchema),
-  critic: z.object({ changed_assessment: z.boolean(), summary: z.string(), objections: z.array(CriticObjectionSchema) }),
+  critic: z.object({ changed_assessment: z.boolean(), summary: z.string(), objections: z.array(CriticObjectionSchema), verification_status: z.enum(["completed", "incomplete", "disabled"]).optional() }),
   next_action: z.string(),
   monitor: z.array(z.string()),
   limitations: z.array(z.string()),

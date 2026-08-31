@@ -60,7 +60,7 @@ export const marketIntelligenceModule: CronobloxModule<z.infer<typeof MarketInpu
 
     const client = createOpenRouterClient();
     const { result, toolCallCount, degraded } = await runAgentLoop({
-      client, model: context.profile.model, system: SYSTEM,
+      client, model: context.profile.model, reasoningEffort: context.profile.reasoning_effort, system: SYSTEM,
       userInput: { focus: input.focus, game: input.game, research_effort: context.profile.effort, search_call_allowance: agentCallAllowance(context.profile, "research") },
       tools,
       submit: { name: "submit_socials_findings", description: "Submit your final findings for this delegation.", schema: MarketSubmitSchema },
@@ -70,6 +70,7 @@ export const marketIntelligenceModule: CronobloxModule<z.infer<typeof MarketInpu
     });
 
     const videoResults = evidenceSink.filter((item) => item.source.type === "youtube_ytdlp").length;
+    if (degraded) warnings.push(`${MODULE_LABEL} returned its findings through the bounded JSON recovery path rather than a submit tool call.`);
     const creatorCount = new Set(evidenceSink.filter((item) => item.source.type === "youtube_ytdlp").map((item) => (item.observation?.value as { channel?: string } | null)?.channel).filter((value): value is string => Boolean(value))).size;
     const output: MarketOutput = { ...result, video_results: videoResults, creator_count: creatorCount };
 

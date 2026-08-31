@@ -60,8 +60,16 @@ Evaluation output is written to `evaluation-output/`. Human-required rubric fiel
 
 ## Runtime and cost
 
+### Bring your own AI
+
+The landing page's **Add to your AI** card offers a Claude plugin, ChatGPT setup, an OpenAI desktop plugin bundle, and generic MCP configuration. The public, data-only `/mcp` endpoint reuses Cronoblox's Roblox audit and research tools without invoking any models or creating a paid run. The user's AI client performs analysis under its own plan limits. Tools require no account or API key during this hackathon preview.
+
+Set `CRONOBLOX_PUBLIC_URL` to the deployed HTTPS origin before sharing plugins. Install `yt-dlp` on the **web host** for YouTube search. Cloud clients cannot reach a local development URL. Custom installation is implemented; public directory listing still requires platform review. See [MCP deployment, installation and limits](docs/mcp.md).
+
+### Hosted investigations
+
 Module 2 usually takes seconds. A full run depends on provider latency and the configured four-minute budget. The default profile caps external calls at 18 and critic cycles at two. OpenRouter token usage is stored with the trajectory; model prices change, so the adapter does not invent an estimated cost when a validated price table is unavailable.
 
 ## Scope boundaries
 
-Intentionally deferred: historical collection, ML forecasting, Roblox client automation, screenshots/vision, MCP/plugin packaging, watchlists, alerts, portfolios, and acquisition decisions. Public Roblox endpoints may change; failures are recorded as degraded evidence. Badge interpretations must remain labeled inferences.
+Intentionally deferred: historical collection, ML forecasting, Roblox client automation, screenshots/vision, watchlists, alerts, portfolios, and acquisition decisions. Public Roblox endpoints may change; failures are recorded as degraded evidence. Badge interpretations must remain labeled inferences.

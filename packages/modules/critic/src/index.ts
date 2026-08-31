@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { agentCallAllowance, createOpenRouterClient, runAgentLoop, withIterationCap, type AgentTool } from "@cronoblox/agent-core";
+import { AgentModelError, agentCallAllowance, createOpenRouterClient, runAgentLoop, withIterationCap, type AgentLoopResult, type AgentTool } from "@cronoblox/agent-core";
 import { createEvidenceLookupTool, createFetchPageTool, emitAgentEvent, keepKnownIds, toToolRuntime } from "@cronoblox/agent-tools";
 import { BreakoutPotentialSchema, CriticObjectionSchema, ThesisSchema, type Evidence } from "@cronoblox/contracts";
 import type { CronobloxModule } from "@cronoblox/module-sdk";
@@ -9,7 +9,7 @@ export const CriticOutputSchema = z.object({ objections: z.array(CriticObjection
 export type CriticOutput = z.infer<typeof CriticOutputSchema>;
 
 const SYSTEM = `You are the Cronoblox Critic, a falsification-minded verifier reviewing the orchestrator's thesis after the fact. Your job is to find reasons the thesis could be wrong, not to rubber-stamp it.
-Check specifically: does every supporting/risk claim actually have evidence backing it (use get_evidence_by_id to inspect any claim's cited evidence)? Are there alternative, non-breakout explanations for the same numbers? Is source coverage (YouTube-only, no general web search in this run) actually adequate, or are there source_failures that mean the rating is not earned? You may use fetch_page to independently open a cited source URL and spot-check one or two specific claims if it would change your verdict — you don't have to use it.
+Check specifically: does every supporting/risk claim actually have evidence backing it? The cited_evidence in your input contains the full stored records for the thesis's citations: inspect those directly, without requesting them again. Only use get_evidence_by_id for additional records not already included. Are there alternative, non-breakout explanations for the same numbers? Is source coverage (YouTube-only, no general web search in this run) actually adequate, or are there source_failures that mean the rating is not earned? You may use fetch_page to independently open a cited source URL and spot-check one or two specific claims if it would change your verdict — you don't have to use it.
 Every objection's affected_claim_ids and evidence_ids must reference real ids from the thesis/evidence you were given — never invent one. Set recommended_potential to the rating the report should actually ship with: hold the orchestrator's rating when the evidence earns it, and lower it (LOW < MODERATE < HIGH < VERY HIGH) when it does not. Never raise it — you are a check on optimism, not a second opinion in its favour. A rating is not a probability, so do not hedge a well-evidenced rating just because the future is uncertain; downgrade only when a specific objection undercuts the evidence behind the rating.
 Call submit_critique when done. severity "high" means the report should not ship as-is; "medium"/"low" are noted caveats that still allow shipping, usually at a lower potential.`;
 
@@ -52,15 +52,28 @@ export const criticModule: CronobloxModule<z.infer<typeof CriticInputSchema>, Cr
     tools.push(createFetchPageTool(runtime));
 
     const client = createOpenRouterClient();
-    const { result, degraded } = await runAgentLoop({
-      client, model: context.profile.model, system: SYSTEM,
-      userInput: { thesis: input.thesis, evidence_ids: input.evidence_ids, source_failures: input.source_failures },
-      tools,
-      submit: { name: "submit_critique", description: "Submit your final critique.", schema: CriticOutputSchema },
-      budget: withIterationCap(context.budget, 4, agentCallAllowance(context.profile, "verify")),
-      signal: context.signal,
-      onEvent: (event) => emitAgentEvent(context, "critic", event),
-    });
+    const citedIds = new Set([...input.thesis.supporting_claims, ...input.thesis.risk_claims].flatMap((claim) => claim.evidence_ids));
+    let review: AgentLoopResult<CriticOutput>;
+    try {
+      review = await runAgentLoop({
+        client, model: context.profile.model, reasoningEffort: context.profile.reasoning_effort, system: SYSTEM,
+        userInput: { thesis: input.thesis, cited_evidence: knownEvidence.filter((item) => citedIds.has(item.id)), evidence_ids: input.evidence_ids, source_failures: input.source_failures },
+        tools,
+        submit: { name: "submit_critique", description: "Submit your final critique.", schema: CriticOutputSchema },
+        budget: withIterationCap(context.budget, 4, agentCallAllowance(context.profile, "verify")),
+        signal: context.signal,
+        recoverOnModelError: false,
+        onEvent: (event) => emitAgentEvent(context, "critic", event),
+      });
+    } catch (error) {
+      context.signal.throwIfAborted();
+      if (!(error instanceof AgentModelError)) throw error;
+      const summary = `Independent verification did not complete. ${error.message} The research is preserved, but the thesis remains unverified.`;
+      // Persist the failed optional module and any genuine evidence via ModuleRunner. Do not
+      // invent objections, change the rating without a review, or trigger more revision calls.
+      return { status: "failed", output: { summary, objections: [], recommended_potential: input.thesis.breakout_potential }, evidence: evidenceSink, warnings: [summary], suggested_next_steps: ["Retry independent verification before relying on this thesis."], metrics: { duration_ms: 0, external_calls: 0, estimated_cost_usd: null } };
+    }
+    const { result, degraded } = review;
 
     const allKnownEvidenceIds = new Set([...knownEvidenceIds, ...evidenceSink.map((item) => item.id)]);
     const sanitized: CriticOutput = {

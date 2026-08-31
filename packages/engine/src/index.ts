@@ -6,7 +6,7 @@ import { robloxDataModule, type RobloxDataOutput } from "@cronoblox/module-roblo
 import { dataAgentModule } from "@cronoblox/module-data-agent";
 import { marketIntelligenceModule } from "@cronoblox/module-market-intelligence";
 import { orchestratorModule } from "@cronoblox/module-orchestrator";
-import { criticModule } from "@cronoblox/module-critic";
+import { clampPotential, criticModule } from "@cronoblox/module-critic";
 import { evaluateStoppingRule } from "./stopping";
 export { evaluateStoppingRule } from "./stopping";
 
@@ -87,11 +87,11 @@ export async function executeRun(runId: string, hooks: EngineHooks = {}) {
       let unresolvedHigh = critic.output.objections.filter((item) => item.severity === "high" && !item.resolved);
       const maxCycles = run.profileSnapshot.limits.max_critic_cycles;
 
-      while (unresolvedHigh.length > 0 && cycles < maxCycles) {
+      while (critic.status !== "failed" && unresolvedHigh.length > 0 && cycles < maxCycles) {
         cycles += 1;
         await addRunEvent(runId, "ROUTE", "info", "critic.revise", `Revising the thesis to address ${unresolvedHigh.length} unresolved high-severity objection(s) (cycle ${cycles}/${maxCycles})`, { objections: unresolvedHigh.map((item) => item.summary) });
         orchestratorResult = await runner.run<Parameters<typeof orchestratorModule.execute>[0], Thesis>("orchestrator", { game: gameContext, user_mode: run.input.user_mode, baseline, critic_feedback: unresolvedHigh.map((item) => ({ summary: item.summary, resolution_request: item.resolution_request })) }, context);
-        finalThesis = orchestratorResult.output;
+        finalThesis = { ...orchestratorResult.output, breakout_potential: clampPotential(orchestratorResult.output.breakout_potential, finalThesis.breakout_potential) };
         critic = await runner.run("critic", { thesis: finalThesis, evidence_ids: await evidenceIds(), source_failures: dedupedFailures() }, context);
         if (critic.output.recommended_potential !== finalThesis.breakout_potential) finalThesis = { ...finalThesis, breakout_potential: critic.output.recommended_potential };
         unresolvedHigh = critic.output.objections.filter((item) => item.severity === "high" && !item.resolved);
@@ -99,7 +99,9 @@ export async function executeRun(runId: string, hooks: EngineHooks = {}) {
 
       const stopping = evaluateStoppingRule({ requiredEvidencePresent: core.evidence.length > 0, unresolvedHighSeverity: unresolvedHigh.length, furtherCallExpectedValue: unresolvedHigh.length > 0 && cycles < maxCycles ? "medium" : "low", budgetReached: cycles >= maxCycles });
       if (!stopping.stop) throw new Error("Critic found unsupported material claims that could not be resolved within the run budget.");
-      await addRunEvent(runId, "ROUTE", "info", "critic.resolved", finalThesis.breakout_potential === initialThesis.breakout_potential ? "Critic review held the rating — the evidence survived verification" : `Critic review lowered breakout potential from ${initialThesis.breakout_potential} to ${finalThesis.breakout_potential}`, { objections: critic.output.objections.length, cycles, initial_potential: initialThesis.breakout_potential, final_potential: finalThesis.breakout_potential, stopping_reason: stopping.reason });
+      const verified = critic.status !== "failed" && unresolvedHigh.length === 0;
+      if (!verified) sourceFailures.push("Independent verification is incomplete; treat this report as an unverified research draft.");
+      await addRunEvent(runId, "ROUTE", verified ? "info" : "warning", verified ? "critic.resolved" : "critic.incomplete", !verified ? "Research preserved, but independent verification is incomplete — the thesis is not verified" : finalThesis.breakout_potential === initialThesis.breakout_potential ? "Critic review held the rating — the evidence survived verification" : `Critic review lowered breakout potential from ${initialThesis.breakout_potential} to ${finalThesis.breakout_potential}`, { objections: critic.output.objections.length, cycles, initial_potential: initialThesis.breakout_potential, final_potential: finalThesis.breakout_potential, stopping_reason: stopping.reason });
     } else {
       await move("SYNTHESIZE", "Thesis formed — critic disabled by the immutable run profile");
     }
@@ -123,6 +125,7 @@ function buildReport(input: { runId: string; core: RobloxDataOutput; userMode: "
   const byModule = (id: string) => input.evidence.filter((item) => item.module_id === id).map((item) => item.id);
   const changed = input.initial.breakout_potential !== input.final.breakout_potential;
   const evidenceIds = [...new Set([...input.final.supporting_claims, ...input.final.risk_claims].flatMap((claim) => claim.evidence_ids))];
+  const verificationStatus = !input.critic ? "disabled" : input.moduleRows.some((row) => row.moduleId === "critic" && row.status === "failed") || input.critic.objections.some((item) => item.severity === "high" && !item.resolved) ? "incomplete" : "completed";
 
   const auditCards = AUDIT_CARD_DEFS.map((def) => {
     const row = input.moduleRows.find((item) => item.moduleId === def.id);
@@ -142,7 +145,7 @@ function buildReport(input: { runId: string; core: RobloxDataOutput; userMode: "
     verdict: { breakout_potential: input.final.breakout_potential, verdict_line: input.final.verdict_line, recommendation: input.final.recommendation }, initial_verdict: { breakout_potential: input.initial.breakout_potential },
     audit_cards: auditCards,
     supporting_claims: input.final.supporting_claims, risk_claims: input.final.risk_claims,
-    critic: { changed_assessment: changed, summary: input.critic?.summary ?? "No critic was enabled for this run.", objections: input.critic?.objections ?? [] },
+    critic: { verification_status: verificationStatus, changed_assessment: changed, summary: input.critic?.summary ?? "No critic was enabled for this run.", objections: input.critic?.objections ?? [] },
     next_action: input.final.recommendation,
     monitor: ["Concurrent-player persistence after the latest update window", "Creator diversity and repeated independent coverage", "Favorites and votes normalized by visits", "Comparable-game position in Roblox recommendations"],
     limitations: ["Current platform metrics are a snapshot, not a historical growth series.", ...(input.fixture ? [] : ["This run has no general web-search tool — social/creator coverage is YouTube-only."]), ...input.sourceFailures, ...(input.fixture ? ["This report uses cached fixture evidence and must not be presented as a live audit."] : [])],

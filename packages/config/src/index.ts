@@ -57,7 +57,7 @@ export function scaleLimits(limits: Limits, effort: Effort): Limits {
 const common = {
   // No "brave"/general web-search tool — see packages/modules/market-intelligence for why (dropped
   // after live-testing showed keyless web-scraping alternatives get blocked from server IPs).
-  version: 1, enabled_tools: ["roblox", "youtube"], module_versions: versions,
+  version: 2, enabled_tools: ["roblox", "youtube"], module_versions: versions,
   model: process.env.OPENROUTER_MODEL ?? "openai/gpt-5-mini",
   effort: "medium" as Effort,
   // Real tool-calling delegation (orchestrator -> data/socials agents -> critic, possibly across
@@ -78,5 +78,13 @@ export function getProfile(id: string, effort: Effort = "medium"): ProfileSnapsh
   const profile = profiles[id];
   if (!profile) throw new Error(`Unknown analysis profile: ${id}`);
   const snapshot = structuredClone(profile);
-  return { ...snapshot, effort, limits: scaleLimits(snapshot.limits, effort) };
+  return { ...snapshot, effort, reasoning_effort: reasoningEffortFor(snapshot.model, effort), limits: scaleLimits(snapshot.limits, effort) };
+}
+
+/** DeepSeek V4 defaults to high and accepts low/high/max, not medium. Keep this policy
+ * model-specific: unknown providers retain their defaults instead of receiving unsupported options.
+ * Source: https://openrouter.ai/api/v1/models (DeepSeek V4 reasoning metadata).
+ */
+export function reasoningEffortFor(model: string, effort: Effort): "low" | "high" | undefined {
+  return model.startsWith("deepseek/deepseek-v4-") ? effort === "high" ? "high" : "low" : undefined;
 }

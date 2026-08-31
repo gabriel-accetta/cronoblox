@@ -23,7 +23,7 @@ describe("OpenRouter agent loop", () => {
     const client = createOpenRouterClient("sk-or-test");
     const budget = createRunBudget({ maxExternalCalls: 10, maxCostUsd: 10 });
     const { result, iterations } = await runAgentLoop({
-      client, model: "openai/gpt-5-mini", system: "You are a test agent.", userInput: { game: "Test game" },
+      client, model: "openai/gpt-5-mini", reasoningEffort: "low", system: "You are a test agent.", userInput: { game: "Test game" },
       tools: [],
       submit: { name: "submit_answer", description: "Submit your final answer.", schema: z.object({ breakout_potential: z.enum(["LOW", "MODERATE", "HIGH", "VERY HIGH"]) }) },
       budget: withIterationCap(budget, 4, 10),
@@ -34,6 +34,8 @@ describe("OpenRouter agent loop", () => {
     expect(captured?.authorization).toBe("Bearer sk-or-test");
     expect(captured?.title).toBe("Cronoblox");
     expect(captured?.body.model).toBe("openai/gpt-5-mini");
+    expect(captured?.body.reasoning_effort).toBe("low");
+    expect(captured?.body.max_tokens).toBe(4096);
     expect(Array.isArray(captured?.body.tools)).toBe(true);
     expect(result.breakout_potential).toBe("MODERATE");
     expect(iterations).toBe(1);

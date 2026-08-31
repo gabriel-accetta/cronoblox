@@ -34,7 +34,7 @@ export function parsePlaceId(value: string): string {
   try { url = new URL(trimmed); } catch { throw new Error("Enter a public Roblox game URL or numeric experience ID."); }
   if (!/(^|\.)roblox\.com$/i.test(url.hostname)) throw new Error("The URL must be on roblox.com.");
   const match = url.pathname.match(/\/games\/(\d+)/i);
-  if (!match?.[1]) throw new Error("The Roblox URL does not contain a place or experience ID.");
+  if (!match?.[1]) throw new Error("The Roblox game URL does not contain a place ID.");
   return match[1];
 }
 

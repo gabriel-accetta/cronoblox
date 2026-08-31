@@ -66,7 +66,7 @@ export const orchestratorModule: CronobloxModule<z.infer<typeof OrchestratorInpu
 
     const client = createOpenRouterClient();
     const { result, degraded } = await runAgentLoop({
-      client, model: context.profile.model, system: SYSTEM,
+      client, model: context.profile.model, reasoningEffort: context.profile.reasoning_effort, system: SYSTEM,
       userInput: {
         game: input.game, user_mode: input.user_mode,
         core_evidence: coreEvidence.map((item) => ({ id: item.id, claim: item.claim, relationship: item.relationship, support_strength: item.support_strength })),

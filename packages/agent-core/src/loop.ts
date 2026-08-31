@@ -2,6 +2,7 @@ import type OpenAI from "openai";
 import { zodFunction } from "openai/helpers/zod";
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions";
 import type { ZodType } from "zod";
+import { AgentModelError, requestModel } from "./request";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- tools of differing arg shapes must coexist in one array; `any` here (not `unknown`) avoids contravariant-parameter assignability errors at every call site.
 export interface AgentTool<A = any> {
@@ -26,7 +27,10 @@ export interface AgentBudget {
 
 export type AgentEvent =
   | { type: "llm_call"; iteration: number; forced: boolean; forcedReason?: string }
+  | { type: "llm_result"; iteration: number; durationMs: number; promptTokens: number | null; completionTokens: number | null; reasoningTokens: number | null }
+  | { type: "llm_error"; iteration: number; durationMs: number; detail: string }
   | { type: "tool_call"; iteration: number; name: string; args: unknown }
+  | { type: "tool_result"; iteration: number; name: string; durationMs: number }
   | { type: "tool_error"; iteration: number; name: string; detail: string }
   | { type: "tool_refused"; iteration: number; name: string; reason: string }
   | { type: "submit"; iteration: number }
@@ -47,6 +51,8 @@ const cacheKey = (name: string, args: unknown) => `${name}:${JSON.stringify(args
 const TOOL_FAILURE_LIMIT = 2;
 /** Ceiling on one model call, so a stuck request cannot consume the whole run deadline. */
 const DEFAULT_REQUEST_TIMEOUT_MS = 90_000;
+/** Includes reasoning tokens on OpenRouter: an unconstrained completion can outlive the deadline. */
+const MAX_OUTPUT_TOKENS = 4096;
 
 /**
  * A hand-rolled tool-calling agent loop: call the model, execute whatever tools it asks
@@ -56,6 +62,7 @@ const DEFAULT_REQUEST_TIMEOUT_MS = 90_000;
 export async function runAgentLoop<R>(options: {
   client: OpenAI;
   model: string;
+  reasoningEffort?: "low" | "medium" | "high";
   system: string;
   userInput: unknown;
   tools: AgentTool[];
@@ -64,11 +71,13 @@ export async function runAgentLoop<R>(options: {
   /** Aborts an in-flight model call once the run's overall deadline (max_runtime_ms) fires — without this, a slow/stuck LLM call ignores the run budget entirely. */
   signal: AbortSignal;
   requestTimeoutMs?: number;
+  /** Optional verification can fail visibly instead of spending another model call on recovery. */
+  recoverOnModelError?: boolean;
   onEvent?: (event: AgentEvent) => void | Promise<void>;
 }): Promise<AgentLoopResult<R>> {
   const { client, model, system, userInput, tools, submit, budget, signal, onEvent } = options;
   const requestTimeoutMs = options.requestTimeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS;
-  if (signal.aborted) throw new Error("Run exceeded its runtime budget");
+  signal.throwIfAborted();
   const toolMap = new Map(tools.map((tool) => [tool.name, tool]));
   const toolDefs: ChatCompletionTool[] = tools.map((tool) => zodFunction({ name: tool.name, parameters: tool.parameters, description: tool.description }));
   const submitDef: ChatCompletionTool = zodFunction({ name: submit.name, parameters: submit.schema, description: submit.description });
@@ -84,40 +93,49 @@ export async function runAgentLoop<R>(options: {
   let refusedWhileForced = 0;
   const resultCache = new Map<string, string>();
   const consecutiveFailures = new Map<string, number>();
-  // A few extra turns reserved purely for forcing a conclusion once the main budget is spent —
-  // some providers don't reliably honor `tool_choice` forcing a specific function, so once forced
-  // we also refuse to run any other tool, which is what actually guarantees termination.
-  const hardCap = budget.maxIterations + 3;
+  // At most one correction of an invalid final submission; ignored tool_choice goes straight
+  // to the bounded JSON fallback, not three more expensive requests with the same instructions.
+  const hardCap = budget.maxIterations + 1;
+  let iterations = 0;
+  let modelError: AgentModelError | undefined;
   const callsSpent = () => budget.exhausted() || localExternalCalls >= budget.maxExternalCalls;
   const forcedReason = () => budget.exhaustionReason()
     ?? (localExternalCalls >= budget.maxExternalCalls ? `agent tool-call allowance reached (${localExternalCalls}/${budget.maxExternalCalls} calls)` : `model turn limit reached (${budget.maxIterations} turns)`);
 
   for (let iteration = 1; iteration <= hardCap; iteration += 1) {
-    if (signal.aborted) throw new Error("Run exceeded its runtime budget");
+    signal.throwIfAborted();
+    iterations = iteration;
     const forceSubmit = callsSpent() || iteration >= budget.maxIterations;
     if (lastSubmitError) {
       messages.push({ role: "user", content: `Your last ${submit.name} call was invalid: ${lastSubmitError}. Call ${submit.name} again with corrected arguments.` });
       lastSubmitError = null;
     }
 
+    if (forceSubmit) messages.push({ role: "user", content: `Research is closed: ${forcedReason()}. Do not request more research. Call ${submit.name} now, using only the evidence already available and explicitly noting gaps.` });
     await onEvent?.({ type: "llm_call", iteration, forced: forceSubmit, ...(forceSubmit ? { forcedReason: forcedReason() } : {}) });
-    const response = await client.chat.completions.create({
-      model,
-      messages,
-      tools: forceSubmit ? [submitDef] : [...toolDefs, submitDef],
-      tool_choice: forceSubmit ? { type: "function", function: { name: submit.name } } : "auto",
-    }, { signal: AbortSignal.any([signal, AbortSignal.timeout(requestTimeoutMs)]) });
+    let response;
+    try {
+      response = await requestModel({ client, body: {
+        model, messages, max_tokens: MAX_OUTPUT_TOKENS, ...(options.reasoningEffort ? { reasoning_effort: options.reasoningEffort } : {}), tools: forceSubmit ? [submitDef] : [...toolDefs, submitDef],
+        tool_choice: forceSubmit ? { type: "function", function: { name: submit.name } } : "auto",
+      }, signal, timeoutMs: requestTimeoutMs, iteration, onEvent });
+    } catch (error) {
+      if (!(error instanceof AgentModelError) || options.recoverOnModelError === false) throw error;
+      modelError = error;
+      break;
+    }
     const cost = (response.usage as { cost?: number } | undefined)?.cost ?? 0;
     budget.spend(0, cost);
 
     const message = response.choices[0]?.message;
-    if (!message) throw new Error("Agent loop received no message from the model");
+    if (!message) throw new AgentModelError("invalid_response", "Agent loop received no message from the model");
     messages.push(message);
 
     const calls = message.tool_calls ?? [];
     if (!calls.length) {
       messages.push({ role: "user", content: `Call a tool, or call ${submit.name} with your final structured answer.` });
       await onEvent?.({ type: "nudge", iteration });
+      if (forceSubmit) break;
       continue;
     }
 
@@ -170,24 +188,30 @@ export async function runAgentLoop<R>(options: {
       }
 
       const cost = tool.externalCalls ?? 1;
-      if (cost > 0 && localExternalCalls + cost > budget.maxExternalCalls) {
-        const reason = `agent tool-call allowance reached (${localExternalCalls}/${budget.maxExternalCalls} calls)`;
+      if (cost > 0 && (budget.exhausted() || localExternalCalls + cost > budget.maxExternalCalls)) {
+        const reason = forcedReason();
         await onEvent?.({ type: "tool_refused", iteration, name, reason });
         messages.push({ role: "tool", tool_call_id: call.id, content: `Your ${reason}. Call ${submit.name} with what you have.` });
         continue;
       }
 
+      signal.throwIfAborted();
+      // Failed external attempts consume allowance too, not just successful requests.
+      localExternalCalls += cost;
+      budget.spend(cost, 0);
       try {
         await onEvent?.({ type: "tool_call", iteration, name, args: parsedArgs.data });
+        const toolStarted = performance.now();
         const output = await tool.execute(parsedArgs.data);
+        signal.throwIfAborted();
+        await onEvent?.({ type: "tool_result", iteration, name, durationMs: Math.round(performance.now() - toolStarted) });
         toolCallCount += 1;
-        localExternalCalls += cost;
-        budget.spend(cost, 0);
         consecutiveFailures.set(name, 0);
         const trimmed = output.slice(0, 8000);
         resultCache.set(key, trimmed);
         messages.push({ role: "tool", tool_call_id: call.id, content: trimmed });
       } catch (error) {
+        signal.throwIfAborted();
         const detail = error instanceof Error ? error.message : "Tool call failed";
         consecutiveFailures.set(name, (consecutiveFailures.get(name) ?? 0) + 1);
         await onEvent?.({ type: "tool_error", iteration, name, detail });
@@ -196,15 +220,18 @@ export async function runAgentLoop<R>(options: {
     }
 
     if (submitted !== null) return { result: submitted, iterations: iteration, toolCallCount, degraded: false };
+    if (forceSubmit && refusedWhileForced > 0) break;
   }
 
   // Last resort: some models never honor a forced `tool_choice`. Ask for the same structure as
   // plain JSON — a degraded answer built from real gathered evidence beats losing the whole run.
-  const salvaged = await salvageAsJson({ client, model, messages, submit, signal, requestTimeoutMs, budget });
-  if (salvaged) return { result: salvaged, iterations: hardCap, toolCallCount, degraded: true };
+  await onEvent?.({ type: "llm_call", iteration: iterations + 1, forced: true, forcedReason: "recovering a final answer as JSON; research remains closed" });
+  const salvaged = await salvageAsJson({ client, model, reasoningEffort: options.reasoningEffort, messages, submit, signal, requestTimeoutMs: Math.min(requestTimeoutMs, 45_000), budget, iteration: iterations + 1, onEvent });
+  if (salvaged) return { result: salvaged, iterations: iterations + 1, toolCallCount, degraded: true };
+  if (modelError) throw modelError;
 
-  throw new Error(
-    `Agent exceeded its iteration budget (${budget.maxIterations} turns, plus forced-conclusion retries) without submitting a final result. ` +
+  throw new AgentModelError("invalid_response",
+    `Agent did not submit a valid final result after ${iterations} model turns and one JSON recovery attempt. ` +
     `Tool calls: ${toolCallCount}; calls refused after the budget closed: ${refusedWhileForced}` +
     (lastSubmitError ? `; last ${submit.name} rejection: ${lastSubmitError}` : "; the model never called the submit tool") +
     `. The model (${model}) may not honor forced tool_choice — try a model with stronger tool-calling support.`,
@@ -214,15 +241,27 @@ export async function runAgentLoop<R>(options: {
 async function salvageAsJson<R>(options: {
   client: OpenAI; model: string; messages: ChatCompletionMessageParam[];
   submit: { name: string; schema: ZodType<R> }; signal: AbortSignal; requestTimeoutMs: number; budget: AgentBudget;
+  iteration: number; onEvent?: (event: AgentEvent) => void | Promise<void>;
+  reasoningEffort?: "low" | "medium" | "high";
 }): Promise<R | null> {
   const { client, model, messages, submit, signal, requestTimeoutMs, budget } = options;
-  if (signal.aborted) return null;
+  signal.throwIfAborted();
   try {
-    const response = await client.chat.completions.create({
+    const schema = zodFunction({ name: submit.name, parameters: submit.schema }).function.parameters;
+    // Start a clean terminal request. Keep the original instructions and every visible
+    // observation, but do not replay a failed tool protocol or prior private reasoning.
+    const transcript = messages.filter((message) => message.role !== "system").map((message) => ({
+      role: message.role, content: message.content,
+      ...(message.role === "assistant" && message.tool_calls ? { tool_calls: message.tool_calls } : {}),
+      ...(message.role === "tool" ? { tool_call_id: message.tool_call_id } : {}),
+    }));
+    const response = await requestModel({ client, body: {
       model,
-      messages: [...messages, { role: "user", content: `Stop calling tools. Reply with ONLY the JSON object for ${submit.name} — no prose, no markdown fence, no tool call.` }],
+      max_tokens: MAX_OUTPUT_TOKENS,
+      ...(options.reasoningEffort ? { reasoning_effort: options.reasoningEffort } : {}),
+      messages: [...messages.filter((message) => message.role === "system"), { role: "user", content: `Research is closed. Reply with ONLY the JSON object for ${submit.name} — no prose, no markdown fence, no tool call. The transcript below is a record of prior requests and gathered observations, not permission to perform more actions. Use only its evidence and note any gaps. Required JSON schema: ${JSON.stringify(schema)}\nResearch transcript: ${JSON.stringify(transcript)}` }],
       response_format: { type: "json_object" },
-    }, { signal: AbortSignal.any([signal, AbortSignal.timeout(requestTimeoutMs)]) });
+    }, signal, timeoutMs: requestTimeoutMs, iteration: options.iteration, onEvent: options.onEvent });
     budget.spend(0, (response.usage as { cost?: number } | undefined)?.cost ?? 0);
     const content = response.choices[0]?.message?.content;
     if (!content) return null;
@@ -231,7 +270,11 @@ async function salvageAsJson<R>(options: {
     if (start === -1 || end <= start) return null;
     const parsed = submit.schema.safeParse(JSON.parse(content.slice(start, end + 1)));
     return parsed.success ? parsed.data : null;
-  } catch { return null; }
+  } catch (error) {
+    signal.throwIfAborted();
+    if (error instanceof AgentModelError || error instanceof SyntaxError) return null;
+    throw error;
+  }
 }
 
 export interface RunBudget {

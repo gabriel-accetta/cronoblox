@@ -120,6 +120,76 @@ h1 em { color: var(--accent); font-style: normal; }
 .toggle-dot.on { background: var(--accent); border-color: var(--accent); }
 .form-error { background: rgba(255,110,110,.1); border: 1px solid rgba(255,110,110,.35); border-radius: var(--radius); color: #ffa3a3; padding: 10px 12px; font-size: 12px; line-height: 1.45; }
 
+/* ---------------------------------------------------- external AI setup */
+.ai-integration { margin-top: 32px; }
+.integration-card { display: inline-flex; align-items: center; padding: 5px 7px; max-width: 100%; border: 1px solid var(--line-strong); border-radius: 3px; background: linear-gradient(150deg,#172035,#0d1320); box-shadow: 0 6px 24px #02061040, inset 0 1px 0 #ffffff08; }
+.integration-card button { border: 0; background: transparent; cursor: pointer; border-radius: 3px; transition: background .15s, color .15s; }
+.integration-card button:hover { background: #ffffff0b; color: #fff; }
+.integration-trigger { display: flex; align-items: center; gap: 9px; padding: 12px 13px; color: var(--paper); font-size: 14px; font-weight: 600; white-space: nowrap; }
+.integration-trigger svg { width: 16px; height: 16px; color: var(--muted); }
+.integration-divider { width: 1px; height: 23px; background: var(--line-strong); margin: 0 5px; }
+.integration-client-shortcuts { display: flex; }
+.integration-client-shortcuts button { width: 38px; height: 40px; display: grid; place-items: center; color: #c5cfe3; }
+.integration-client-logo { display: block; flex-shrink: 0; object-fit: contain; opacity: .65; transition: opacity .15s ease; }
+.integration-client-shortcuts button:hover .integration-client-logo, .integration-tabs button[aria-selected="true"] .integration-client-logo { opacity: .85; }
+.integration-client-shortcuts svg, .integration-client-shortcuts .integration-client-logo { width: 19px; height: 19px; }
+.integration-caption { color: var(--muted-dim); font-size: 11px; margin: 12px 0 0 2px; }
+.integration-dialog { width: min(600px,calc(100vw - 28px)); max-height: calc(100dvh - 40px); padding: 0; color: var(--paper); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 3px; box-shadow: 0 35px 140px #000a; }
+.integration-dialog::backdrop { background: #030711bf; backdrop-filter: blur(7px); }
+.integration-panel { position: relative; padding: 32px; }
+.integration-close { position: absolute; right: 17px; top: 17px; width: 32px; height: 32px; border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 3px; display: grid; place-items: center; }
+.integration-close:hover { background: var(--surface-3); color: var(--paper); }
+.integration-close svg { width: 19px; height: 19px; }
+.integration-eyebrow { display: flex; align-items: center; gap: 7px; color: var(--accent-bright); font: 500 10px var(--font-mono), monospace; letter-spacing: .12em; margin: 0 32px 18px 0; }
+.integration-eyebrow svg { width: 14px; height: 14px; }
+.integration-panel h2 { font-size: 29px; letter-spacing: -.04em; line-height: 1.12; margin: 0 0 12px; font-weight: 600; }
+.integration-panel > p { color: #aab8d2; line-height: 1.65; font-size: 13px; margin: 0; }
+.integration-tabs { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 5px; background: var(--ink); padding: 5px; border: 1px solid var(--line); border-radius: 3px; margin: 24px 0; }
+.integration-tabs button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; font-size: 12px; border: 1px solid transparent; border-radius: 3px; background: transparent; color: var(--muted); cursor: pointer; }
+.integration-tabs button[aria-selected="true"] { color: var(--paper); border-color: var(--line-strong); background: var(--surface-3); }
+.integration-tabs svg, .integration-tabs .integration-client-logo { width: 17px; height: 17px; }
+.integration-steps { list-style: none; padding: 0; margin: 0; counter-reset: setup; }
+.integration-steps > li { display: flex; gap: 13px; padding-bottom: 24px; counter-increment: setup; }
+.integration-steps > li::before { content: counter(setup); flex: 0 0 26px; height: 26px; display: grid; place-items: center; background: var(--accent-wash); color: var(--accent-bright); border: 1px solid #4d8dff33; border-radius: 3px; font: 500 11px var(--font-mono), monospace; }
+.integration-steps > li > div { min-width: 0; flex: 1; }
+.integration-steps h3 { font-size: 14px; font-weight: 600; margin: 4px 0 8px; }
+.integration-steps p, .integration-alternative p { color: var(--muted); font-size: 12px; line-height: 1.65; margin: 0 0 13px; }
+.integration-steps strong { color: #c8d5ed; font-weight: 500; }
+.integration-actions { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+.integration-button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 10px 13px; min-height: 38px; border: 1px solid var(--line-strong); border-radius: 3px; text-decoration: none; cursor: pointer; font-size: 12px; font-weight: 500; }
+.integration-button.primary { background: var(--accent); color: #071327; border-color: var(--accent); }
+.integration-button.primary:hover { background: var(--accent-bright); }
+.integration-button.secondary { background: var(--surface-2); color: #d4def0; }
+.integration-button.secondary:hover { background: var(--surface-3); }
+.integration-button:disabled, .integration-button.disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.integration-button svg, .integration-text-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+.integration-text-link { color: var(--accent-bright); display: inline-flex; align-items: center; gap: 5px; text-decoration: none; font-size: 12px; }
+.integration-text-link:hover { color: #fff; }
+.integration-endpoint { display: flex; align-items: center; gap: 8px; padding: 7px; margin: 10px 0 13px; border-radius: 3px; border: 1px solid var(--line-strong); background: var(--ink); flex-wrap: wrap; }
+.integration-endpoint > code { padding-left: 5px; flex: 1; min-width: 120px; overflow-wrap: anywhere; font: 11px/1.5 var(--font-mono), monospace; color: var(--accent-bright); }
+.integration-copy-control { min-width: 0; }
+.integration-manual-copy { margin-top: 10px; }
+.integration-manual-copy textarea { width: 100%; resize: vertical; border: 1px solid var(--line-strong); background: var(--ink); color: var(--paper); border-radius: 3px; padding: 10px; font-size: 11px; }
+.integration-alternative { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 14px 0; }
+.integration-alternative summary { font-size: 12px; color: #c0cce2; cursor: pointer; }
+.integration-alternative > div { margin-top: 14px; }
+.integration-alternative a { color: var(--accent-bright); }
+.integration-alternative pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; border: 1px solid var(--line); border-radius: 3px; background: var(--ink); color: var(--accent-bright); font: 11px/1.6 var(--font-mono), monospace; }
+.integration-note { color: var(--muted-dim); font-size: 11px; line-height: 1.6; margin: 13px 0 0; }
+.integration-warning { padding: 12px; border: 1px solid #f0c96d40; background: #f0c96d08; border-radius: 3px; color: var(--warn); font-size: 11px; line-height: 1.6; margin: 0 0 20px; }
+.integration-footer { margin-top: 24px; padding-top: 19px; border-top: 1px solid var(--line); }
+.integration-footer > span { display: flex; align-items: center; gap: 7px; color: var(--muted); font: 500 9px var(--font-mono), monospace; letter-spacing: .1em; }
+.integration-status-dot { display: inline-block; width: 5px; height: 5px; border-radius: 3px; background: var(--accent-bright); }
+.integration-footer p { margin: 9px 0 0; color: var(--muted-dim); font-size: 10px; line-height: 1.65; }
+@media (max-width: 560px) {
+  .integration-panel { padding: 24px 20px; }
+  .integration-panel h2 { font-size: 26px; }
+  .integration-tabs { gap: 3px; }
+  .integration-tabs button { gap: 5px; font-size: 11px; }
+  .integration-trigger { padding: 11px 9px; font-size: 13px; }
+  .integration-client-shortcuts button { width: 33px; }
+}
+
 .audit-strip { border-top: 1px solid var(--line); max-width: 1400px; margin: 0 auto; padding: 32px clamp(20px,5vw,72px) 64px; }
 .strip-heading { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
 .strip-heading span { font: 600 10px var(--font-mono), monospace; letter-spacing: .17em; }

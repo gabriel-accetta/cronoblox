@@ -39,7 +39,7 @@ export const dataAgentModule: CronobloxModule<z.infer<typeof DataAgentInputSchem
 
     const client = createOpenRouterClient();
     const { result, toolCallCount, degraded } = await runAgentLoop({
-      client, model: context.profile.model, system: SYSTEM,
+      client, model: context.profile.model, reasoningEffort: context.profile.reasoning_effort, system: SYSTEM,
       userInput: { focus: input.focus, game: input.game, research_effort: context.profile.effort, search_call_allowance: agentCallAllowance(context.profile, "research") },
       tools,
       submit: { name: "submit_data_findings", description: "Submit your final findings for this delegation.", schema: DataAgentOutputSchema },

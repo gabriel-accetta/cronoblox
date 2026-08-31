@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createEvidence, deriveEvidence } from "@cronoblox/evidence";
-import type { CronobloxModule } from "@cronoblox/module-sdk";
+import type { CronobloxModule, ModuleContext, ModuleResult } from "@cronoblox/module-sdk";
 import { RobloxSource, type RobloxCore } from "@cronoblox/source-roblox";
 
 export const RobloxDataInputSchema = z.object({ game_url: z.string().min(1) });
@@ -44,7 +44,15 @@ export const robloxDataModule: CronobloxModule<z.infer<typeof RobloxDataInputSch
   manifest: { id: "roblox-data", name: "Roblox Data Audit", version: "1.0.0", required: true, phase: "core", dependencies: [], defaultConfig: { timeoutMs: 15_000, retries: 2 } },
   inputSchema: RobloxDataInputSchema,
   outputSchema: RobloxDataOutputSchema,
-  async execute(input, context) {
+  execute: collectRobloxData,
+};
+
+/** Shared data-only operation. The worker still validates/persists it through ModuleRunner;
+ * external clients receive the same audit without creating a run or invoking an LLM. */
+export async function collectRobloxData(
+  input: z.infer<typeof RobloxDataInputSchema>,
+  context: Pick<ModuleContext, "runId" | "signal" | "now" | "saveRawArtifact"> & { profile: { fixture_mode: boolean } },
+): Promise<ModuleResult<RobloxDataOutput>> {
     const source = new RobloxSource();
     const audited = context.profile.fixture_mode ? { core: fixture, raw: { fixture: true, core: fixture }, calls: 0, warnings: ["Cached fixture data — not a live audit"] } : await source.audit(input.game_url, context.signal);
     await context.saveRawArtifact("roblox", "core", audited.raw);
@@ -67,5 +75,4 @@ export const robloxDataModule: CronobloxModule<z.infer<typeof RobloxDataInputSch
     const output: RobloxDataOutput = { place_id: core.placeId, universe_id: core.universeId, name: core.name, description: core.description ?? "", creator: core.creator.name, creator_id: core.creator.id == null ? null : String(core.creator.id), creator_type: core.creator.type ?? null, url, creator_url: creatorProfileUrl({ id: core.creator.id ?? null, type: core.creator.type ?? null }), icon_url: core.iconUrl ?? null, thumbnails: core.thumbnails ?? [], created_at: core.created, updated_at: core.updated, playing: core.playing ?? null, visits: core.visits ?? null, favorites: core.favoritedCount ?? null, up_votes: up, down_votes: down, max_players: core.maxPlayers ?? null, genre: core.genre_l2 ?? core.genre_l1 ?? core.genre ?? null, like_ratio: likeRatio, favorites_per_1000_visits: favoriteRate, votes_per_1000_visits: metric(totalVotes, core.visits, 1000), estimated_active_servers: core.playing && core.maxPlayers ? Math.ceil(core.playing / core.maxPlayers) : null, past_day_badge_awards: pastDayBadgeAwards, recommendation_count: core.recommendations.length, recommendations: core.recommendations.filter((item) => item.name).map((item) => ({ name: item.name!, universe_id: item.universeId == null ? null : String(item.universeId), player_count: item.playerCount ?? null, reason: "Seeded by the audited game’s Roblox recommendation graph; retained as a candidate comparable, not assumed identical." })) };
     const status = audited.warnings.length ? "degraded" : "completed";
     return { status, output, evidence: [...base, ...derived], suggested_next_steps: ["Research recent direct coverage", "Explain recommended comparable games"], warnings: audited.warnings, metrics: { duration_ms: 0, external_calls: audited.calls, estimated_cost_usd: 0 } };
-  },
-};
+}

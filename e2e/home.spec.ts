@@ -19,3 +19,20 @@ test("submits, follows visible progress, opens report and evidence", async ({ pa
   await expect(page.getByText("BREAKOUT POTENTIAL")).toBeVisible({ timeout: 5000 }); await expect(page.getByText("HIGH", { exact: true }).first()).toBeVisible();
   await page.getByRole("button", { name: /Roblox data/ }).click(); await expect(page.getByText("EVIDENCE WORKSPACE")).toBeVisible(); await expect(page.getByText(/3,821 concurrent players/)).toBeVisible();
 });
+
+test("failed run elapsed time stays pinned to when it finished, including after reload", async ({ page }) => {
+  await page.route("**/api/runs/e2e-run", (route) => route.fulfill({ json: { run: { ...run, state: "FAILED", updated_at: "2026-08-29T12:08:26.000Z", error: "Model timed out after 90s on turn 2." }, events: [], report: null } }));
+  await page.goto("/runs/e2e-run");
+  await expect(page.getByLabel("Elapsed time 08:26")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Elapsed time 08:26")).toBeVisible();
+});
+
+test("an incomplete critic review is never presented as successful verification", async ({ page }) => {
+  await page.route("**/api/runs/e2e-run", (route) => route.fulfill({ json: { run: { ...run, state: "COMPLETED" }, events: [], report: { ...report, critic: { ...report.critic, verification_status: "incomplete", summary: "Independent verification timed out." } } } }));
+  await page.goto("/runs/e2e-run");
+  await expect(page.getByText(/UNVERIFIED RESEARCH DRAFT/)).toBeVisible();
+  await expect(page.getByText("Verification incomplete", { exact: true })).toBeVisible();
+  await expect(page.getByText("UNVERIFIED RATING", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Rating survived verification|Rating lowered after verification/)).toHaveCount(0);
+});

@@ -12,12 +12,14 @@ export class WebPageSource {
 
     const response = await fetch(parsed, { signal, redirect: "follow", headers: { "user-agent": "Cronoblox/0.1 research-agent" } });
     if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-    const contentType = response.headers.get("content-type") ?? "";
-    if (!contentType.includes("html") && !contentType.includes("text")) throw new Error(`Unsupported content-type: ${contentType || "unknown"}`);
+    const contentType = (response.headers.get("content-type") ?? "").split(";")[0]!.trim().toLowerCase();
+    const isHtml = contentType.includes("html");
+    const isJson = contentType === "application/json" || contentType.endsWith("+json");
+    if (!isHtml && !contentType.startsWith("text/") && !isJson) throw new Error(`Unsupported content-type: ${contentType || "unknown"}`);
 
     const html = await response.text();
-    const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-    const text = htmlToText(html, {
+    const titleMatch = isHtml ? html.match(/<title[^>]*>([^<]*)<\/title>/i) : null;
+    const text = isHtml ? htmlToText(html, {
       wordwrap: false,
       selectors: [
         { selector: "script", format: "skip" },
@@ -25,7 +27,7 @@ export class WebPageSource {
         { selector: "img", format: "skip" },
         { selector: "a", options: { ignoreHref: true } },
       ],
-    }).replace(/\n{3,}/g, "\n\n").trim();
+    }).replace(/\n{3,}/g, "\n\n").trim() : html.trim();
 
     const truncated = text.length > maxChars;
     return { url: parsed.toString(), title: titleMatch?.[1]?.trim() || null, text: truncated ? text.slice(0, maxChars) : text, truncated };

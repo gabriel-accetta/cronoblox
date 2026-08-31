@@ -38,17 +38,17 @@ function formatElapsed(milliseconds: number) {
     : `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-function useElapsedTime(createdAt: string, running: boolean) {
+function useElapsedTime(createdAt: string, finishedAt: string | null) {
   const startedAt = new Date(createdAt).getTime();
-  const [elapsed, setElapsed] = useState(() => Math.max(0, Date.now() - startedAt));
+  const [elapsed, setElapsed] = useState(() => Math.max(0, (finishedAt ? Date.parse(finishedAt) : Date.now()) - startedAt));
 
   useEffect(() => {
-    const update = () => setElapsed(Math.max(0, Date.now() - startedAt));
+    const update = () => setElapsed(Math.max(0, (finishedAt ? Date.parse(finishedAt) : Date.now()) - startedAt));
     update();
-    if (!running) return;
+    if (finishedAt) return;
     const interval = window.setInterval(update, 1000);
     return () => window.clearInterval(interval);
-  }, [createdAt, running, startedAt]);
+  }, [finishedAt, startedAt]);
 
   return elapsed;
 }
@@ -71,7 +71,7 @@ function actorOf(event: RunEvent): { agent: string | null; action: string; detai
 function ProgressView({ detail, onRefresh }: { detail: RunDetail; onRefresh: () => void }) {
   const stateIndex = flow.indexOf(detail.run.state);
   const settled = ["COMPLETED", "FAILED", "CANCELLED"].includes(detail.run.state);
-  const elapsed = useElapsedTime(detail.run.created_at, !settled);
+  const elapsed = useElapsedTime(detail.run.created_at, settled ? detail.run.updated_at : null);
   // Newest first: during a live agent loop the reader should never have to chase the bottom of a growing list.
   const events = useMemo(() => [...detail.events].sort((a, b) => b.sequence - a.sequence), [detail.events]);
   async function action(kind: "cancel" | "retry") { await fetch(`/api/runs/${detail.run.id}/${kind}`, { method: "POST" }); onRefresh(); }
@@ -118,7 +118,7 @@ function ProgressView({ detail, onRefresh }: { detail: RunDetail; onRefresh: () 
       <aside className="run-aside">
         <div><span>PROFILE</span><strong>{detail.run.profile_snapshot.label}</strong><p>{detail.run.profile_snapshot.description}</p></div>
         <div><span>MODE</span><strong>{detail.run.input.user_mode === "developer" ? "Developer" : "Investor / publisher"}</strong></div>
-        <div><span>EFFORT</span><strong>{(detail.run.profile_snapshot.effort ?? "medium").toUpperCase()}</strong><p>{detail.run.profile_snapshot.limits.max_search_results} results per search</p></div>
+        <div><span>EFFORT</span><strong>{(detail.run.profile_snapshot.effort ?? "medium").toUpperCase()}</strong><p>{detail.run.profile_snapshot.limits.max_search_results} results per search{detail.run.profile_snapshot.reasoning_effort ? ` · ${detail.run.profile_snapshot.reasoning_effort} model reasoning` : ""}</p></div>
         <div><span>BUDGET</span><strong>{detail.run.profile_snapshot.limits.max_external_calls} calls · ${detail.run.profile_snapshot.limits.max_cost_usd.toFixed(2)} cap</strong><p>{detail.run.profile_snapshot.limits.max_critic_cycles} critic revision cycles. A turn is one model request; tool calls use the separate call budget.</p></div>
       </aside>
     </div>
@@ -136,9 +136,13 @@ function ReportView({ report }: { report: Report }) {
   const { game, verdict } = report;
   const open = (label: string, summary?: string) => (ids: string[]) => setDrawer({ ids, label, summary });
   const heldRating = report.initial_verdict.breakout_potential === verdict.breakout_potential;
+  const criticCard = report.audit_cards.find((card) => card.module_id === "critic");
+  const verificationStatus = report.critic.verification_status ?? (!criticCard || criticCard.status === "skipped" ? "disabled" : criticCard.status === "failed" ? "incomplete" : "completed");
+  const verified = verificationStatus === "completed";
 
   return <>
     {report.is_fixture && <div className="fixture-banner"><AlertTriangle /> CACHED FIXTURE REPORT — NOT A LIVE AUDIT</div>}
+    {verificationStatus === "incomplete" && <div className="fixture-banner"><AlertTriangle /> UNVERIFIED RESEARCH DRAFT — independent verification did not complete. Review the limitations before relying on this rating.</div>}
     <div className="report-page">
       <section className="report-hero" data-potential={toneOf(verdict.breakout_potential)}>
         {game.icon_url ? <img className="game-art" src={game.icon_url} alt={`${game.name} icon`} width={116} height={116} /> : <div className="game-art monogram" aria-hidden>{game.name.slice(0, 1)}</div>}
@@ -176,8 +180,10 @@ function ReportView({ report }: { report: Report }) {
       </section>
 
       <section className="panel">
-        <div className="section-title"><span>CRITIC REVISION</span><small>{heldRating ? "Rating survived verification" : "Rating lowered after verification"}</small></div>
-        {heldRating
+        <div className="section-title"><span>CRITIC REVISION</span><small>{!verified ? verificationStatus === "disabled" ? "Verification disabled" : "Verification incomplete" : heldRating ? "Rating survived verification" : "Rating lowered after verification"}</small></div>
+        {!verified
+          ? <div className="revision-held" data-potential={toneOf(verdict.breakout_potential)}><span>UNVERIFIED RATING</span><strong>{verdict.breakout_potential}</strong></div>
+          : heldRating
           ? <div className="revision-held" data-potential={toneOf(verdict.breakout_potential)}><span>HELD AT</span><strong>{verdict.breakout_potential}</strong></div>
           : <div className="revision-row">
               <div data-potential={toneOf(report.initial_verdict.breakout_potential)}><span>INITIAL</span><strong>{report.initial_verdict.breakout_potential}</strong></div>
