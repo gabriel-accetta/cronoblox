@@ -1,18 +1,86 @@
 {
-  "version": 1,
-  "frozen_at": "2026-08-29",
-  "selection_method": "Fixed public examples spanning genres, audience sizes, creation eras, and one intentionally contradictory/update-sensitive case. IDs are frozen before model tuning.",
-  "filters": { "locale": "en-US", "device": "desktop", "player_data": false },
+  "version": 2,
+  "frozen_at": "2026-08-31",
+  "primary_metric": "Independent corroboration behind the verdict — the number of distinct external sources a reader can open to check the report, rather than taking the game's own page at its word.",
+  "good_result": "For the intended user, a good final result is a verdict they could defend in a meeting: it rests on sources outside the game's own listing, it states the downside case explicitly, and it has survived a verification pass that was allowed to lower it. Claim traceability alone is not enough — a report can be perfectly traceable and still cite nothing but the page it was handed.",
+  "selection_method": "Ten live public Roblox experiences taken from Roblox discovery surfaces during the hackathon window. They are deliberately mid- and small-scale games whose outcome is still undecided — the situation the tool exists for — rather than already-decided giants like Adopt Me. IDs were frozen before the paired sweep was run, and both profiles receive the identical URL, effort and user mode.",
+  "protocol": "Each case is run twice within the same hour: once on the `baseline` profile and once on `full`, both at effort=medium, user_mode=developer. Failures are preserved, never re-rolled.",
+  "resource_note": "Baseline receives the same mandatory Roblox data bundle and the same model, then makes one direct assessment call with no sub-agents and no verification. Full additionally receives delegation to the data and social agents and up to two critic revision cycles. Both share one run-wide budget cap.",
+  "filters": {
+    "locale": "en-US",
+    "device": "desktop",
+    "player_data": false
+  },
+  "profiles": {
+    "baseline": "baseline",
+    "solution": "full"
+  },
+  "settings": {
+    "effort": "medium",
+    "user_mode": "developer"
+  },
   "cases": [
-    { "id": "case_01", "place_id": "920587237", "label": "Adopt Me", "role": "mature high-scale control" },
-    { "id": "case_02", "place_id": "2753915549", "label": "Blox Fruits", "role": "mature breakout control" },
-    { "id": "case_03", "place_id": "537413528", "label": "Build A Boat For Treasure", "role": "creative loop control" },
-    { "id": "case_04", "place_id": "155615604", "label": "Prison Life", "role": "legacy game control" },
-    { "id": "case_05", "place_id": "6284583030", "label": "Pet Simulator X", "role": "franchise comparator" },
-    { "id": "case_06", "place_id": "4924922222", "label": "Brookhaven", "role": "social roleplay control" },
-    { "id": "case_07", "place_id": "606849621", "label": "Jailbreak", "role": "live-service control" },
-    { "id": "case_08", "place_id": "286090429", "label": "Arsenal", "role": "competitive action control" },
-    { "id": "case_09", "place_id": "6516141723", "label": "DOORS", "role": "horror breakout control" },
-    { "id": "case_10", "place_id": "8737899170", "label": "Contradictory cached case", "role": "hard case: update spike vs durability", "fixture": true }
-  ]
+    {
+      "id": "case_01",
+      "place_id": "14026026722",
+      "label": "Terminal [Escape Room]",
+      "role": "escape-room niche, low-visit control"
+    },
+    {
+      "id": "case_02",
+      "place_id": "134162299584012",
+      "label": "Build a Gun Army",
+      "role": "trend-chasing \"build a\" clone"
+    },
+    {
+      "id": "case_03",
+      "place_id": "101396571928321",
+      "label": "Merge a Spinner!",
+      "role": "HARD CASE: update spike vs durability",
+      "hard_case": true
+    },
+    {
+      "id": "case_04",
+      "place_id": "133294838637122",
+      "label": "Jump To Steal Soccer Players",
+      "role": "\"steal\" genre trend follower"
+    },
+    {
+      "id": "case_05",
+      "place_id": "90086669327265",
+      "label": "+1 Cut Grass Adventure",
+      "role": "incremental/idle trend follower"
+    },
+    {
+      "id": "case_06",
+      "place_id": "92637789841354",
+      "label": "Clean all the leaves!",
+      "role": "simulator trend follower"
+    },
+    {
+      "id": "case_07",
+      "place_id": "3016661674",
+      "label": "Rogue Lineage",
+      "role": "legacy durable niche control"
+    },
+    {
+      "id": "case_08",
+      "place_id": "119116892854064",
+      "label": "Debt Hunt",
+      "role": "recent horror/co-op release"
+    },
+    {
+      "id": "case_09",
+      "place_id": "10228136016",
+      "label": "Fallen Survival",
+      "role": "mid-age survival control"
+    },
+    {
+      "id": "case_10",
+      "place_id": "107778070777162",
+      "label": "Steal An Egg",
+      "role": "breakout-adjacent \"steal\" genre"
+    }
+  ],
+  "hard_case_finding": "**Merge a Spinner!** is the hard case: a game carrying an `[UPD 2]` tag and a 6.6K concurrent player base, where the whole question is whether that is durable interest or an update spike. It is also the case that repeatedly exposed real bugs during development — two earlier live runs on this game failed at the critic (`59caef44-3216-42be-afc7-aacbd590e3dd`), which is what produced the per-turn deadline and the unverified-draft degradation path.\n\nIn the evaluation sweep the baseline rated it MODERATE from one source. The agent gathered 38 independent sources, also arrived at MODERATE — and then the critic raised four objections that are the actual result here:\n\n1. It found that the report's claim *\"no top-tier influencer has covered this game\"* was anchored to evidence documenting SSundee's 339K-view video about **a different game** (Merge a Tank). An absence cannot be proven by a record about something else. The critic let the rating stand but logged the claim as under-supported.\n2. It flagged that a 92.1% like ratio was derived from records whose stored observations do not expose the underlying vote counts — the number was right, but its lineage was not independently checkable from the cited records alone.\n3. It rejected *\"self-sustaining player interest\"* as an interpretive leap from four videos with 6 to 635 views.\n\n**What it revealed:** the failure mode that survives an evidence gate is not fabrication — every one of those claims cited a real, persisted record. It is *misattribution*: a claim pointing at evidence that exists but does not actually support it. A gate can only check that a record exists; checking that it supports the claim is exactly the job the critic does, and it is why the verification pass earns its cost. Note also that the critic held MODERATE rather than lowering it, because the objections concerned support quality, not the conclusion — a verifier that lowers every rating it touches is as useless as one that never does."
 }

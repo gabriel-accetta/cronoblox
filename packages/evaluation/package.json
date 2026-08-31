@@ -1,6 +1,6 @@
 {
   "name": "@cronoblox/evaluation", "version": "0.1.0", "private": true, "type": "module",
-  "scripts": { "evaluate": "tsx src/index.ts", "typecheck": "tsc --noEmit" },
+  "scripts": { "sweep": "tsx src/sweep.ts", "evaluate": "tsx src/index.ts", "trajectory": "tsx src/trajectory.ts", "typecheck": "tsc --noEmit" },
   "dependencies": { "@cronoblox/config": "workspace:*", "@cronoblox/contracts": "workspace:*", "@cronoblox/db": "workspace:*", "bullmq": "5.58.5", "ioredis": "5.7.0" },
   "devDependencies": { "tsx": "4.20.5" }
 }

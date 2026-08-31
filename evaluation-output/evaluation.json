@@ -1,537 +1,606 @@
 {
-  "generated_at": "2026-08-29T16:16:48.087Z",
-  "status": "UNSCORED — human review required",
-  "resource_note": "Baseline receives current Module 2 data plus one direct model call; full runs additionally receive enabled research, evidence workspace support, and critic verification.",
+  "generated_at": "2026-08-31T15:34:05.217Z",
+  "spec": {
+    "version": 2,
+    "frozen_at": "2026-08-31",
+    "primary_metric": "Independent corroboration behind the verdict — the number of distinct external sources a reader can open to check the report, rather than taking the game's own page at its word.",
+    "good_result": "For the intended user, a good final result is a verdict they could defend in a meeting: it rests on sources outside the game's own listing, it states the downside case explicitly, and it has survived a verification pass that was allowed to lower it. Claim traceability alone is not enough — a report can be perfectly traceable and still cite nothing but the page it was handed.",
+    "selection_method": "Ten live public Roblox experiences taken from Roblox discovery surfaces during the hackathon window. They are deliberately mid- and small-scale games whose outcome is still undecided — the situation the tool exists for — rather than already-decided giants like Adopt Me. IDs were frozen before the paired sweep was run, and both profiles receive the identical URL, effort and user mode.",
+    "protocol": "Each case is run twice within the same hour: once on the `baseline` profile and once on `full`, both at effort=medium, user_mode=developer. Failures are preserved, never re-rolled.",
+    "resource_note": "Baseline receives the same mandatory Roblox data bundle and the same model, then makes one direct assessment call with no sub-agents and no verification. Full additionally receives delegation to the data and social agents and up to two critic revision cycles. Both share one run-wide budget cap.",
+    "filters": {
+      "locale": "en-US",
+      "device": "desktop",
+      "player_data": false
+    },
+    "profiles": {
+      "baseline": "baseline",
+      "solution": "full"
+    },
+    "settings": {
+      "effort": "medium",
+      "user_mode": "developer"
+    },
+    "cases": [
+      {
+        "id": "case_01",
+        "place_id": "14026026722",
+        "label": "Terminal [Escape Room]",
+        "role": "escape-room niche, low-visit control"
+      },
+      {
+        "id": "case_02",
+        "place_id": "134162299584012",
+        "label": "Build a Gun Army",
+        "role": "trend-chasing \"build a\" clone"
+      },
+      {
+        "id": "case_03",
+        "place_id": "101396571928321",
+        "label": "Merge a Spinner!",
+        "role": "HARD CASE: update spike vs durability",
+        "hard_case": true
+      },
+      {
+        "id": "case_04",
+        "place_id": "133294838637122",
+        "label": "Jump To Steal Soccer Players",
+        "role": "\"steal\" genre trend follower"
+      },
+      {
+        "id": "case_05",
+        "place_id": "90086669327265",
+        "label": "+1 Cut Grass Adventure",
+        "role": "incremental/idle trend follower"
+      },
+      {
+        "id": "case_06",
+        "place_id": "92637789841354",
+        "label": "Clean all the leaves!",
+        "role": "simulator trend follower"
+      },
+      {
+        "id": "case_07",
+        "place_id": "3016661674",
+        "label": "Rogue Lineage",
+        "role": "legacy durable niche control"
+      },
+      {
+        "id": "case_08",
+        "place_id": "119116892854064",
+        "label": "Debt Hunt",
+        "role": "recent horror/co-op release"
+      },
+      {
+        "id": "case_09",
+        "place_id": "10228136016",
+        "label": "Fallen Survival",
+        "role": "mid-age survival control"
+      },
+      {
+        "id": "case_10",
+        "place_id": "107778070777162",
+        "label": "Steal An Egg",
+        "role": "breakout-adjacent \"steal\" genre"
+      }
+    ],
+    "hard_case_finding": "**Merge a Spinner!** is the hard case: a game carrying an `[UPD 2]` tag and a 6.6K concurrent player base, where the whole question is whether that is durable interest or an update spike. It is also the case that repeatedly exposed real bugs during development — two earlier live runs on this game failed at the critic (`59caef44-3216-42be-afc7-aacbd590e3dd`), which is what produced the per-turn deadline and the unverified-draft degradation path.\n\nIn the evaluation sweep the baseline rated it MODERATE from one source. The agent gathered 38 independent sources, also arrived at MODERATE — and then the critic raised four objections that are the actual result here:\n\n1. It found that the report's claim *\"no top-tier influencer has covered this game\"* was anchored to evidence documenting SSundee's 339K-view video about **a different game** (Merge a Tank). An absence cannot be proven by a record about something else. The critic let the rating stand but logged the claim as under-supported.\n2. It flagged that a 92.1% like ratio was derived from records whose stored observations do not expose the underlying vote counts — the number was right, but its lineage was not independently checkable from the cited records alone.\n3. It rejected *\"self-sustaining player interest\"* as an interpretive leap from four videos with 6 to 635 views.\n\n**What it revealed:** the failure mode that survives an evidence gate is not fabrication — every one of those claims cited a real, persisted record. It is *misattribution*: a claim pointing at evidence that exists but does not actually support it. A gate can only check that a record exists; checking that it supports the claim is exactly the job the critic does, and it is why the verification pass earns its cost. Note also that the critic held MODERATE rather than lowering it, because the objections concerned support quality, not the conclusion — a verifier that lowers every rating it touches is as useless as one that never does."
+  },
+  "summary": {
+    "cases": 10,
+    "completed": {
+      "baseline": 10,
+      "solution": 10
+    },
+    "claim_evidence_coverage_pct": {
+      "baseline": 95.65217391304348,
+      "solution": 97.53086419753086
+    },
+    "distinct_sources_per_report": {
+      "baseline": 1,
+      "solution": 30.6
+    },
+    "evidence_records_per_report": {
+      "baseline": 5,
+      "solution": 47.6
+    },
+    "risk_claims_per_report": {
+      "baseline": 2.8,
+      "solution": 3.4
+    },
+    "contradicting_evidence_total": {
+      "baseline": 0,
+      "solution": 0
+    },
+    "objections_raised_total": {
+      "baseline": 0,
+      "solution": 28
+    },
+    "ratings_lowered_by_verification": {
+      "baseline": 0,
+      "solution": 4
+    },
+    "unverified_drafts": {
+      "baseline": 0,
+      "solution": 1
+    },
+    "runtime_ms_per_report": {
+      "baseline": 26177.5,
+      "solution": 202256.8
+    },
+    "cost_usd_per_report": {
+      "baseline": 0.0004979001,
+      "solution": 0.004964580663200001
+    },
+    "model_turns_per_report": {
+      "baseline": 2,
+      "solution": 12.3
+    },
+    "tool_calls_per_report": {
+      "baseline": 0,
+      "solution": 17.3
+    }
+  },
   "cases": [
     {
       "id": "case_01",
-      "place_id": "920587237",
-      "label": "Adopt Me",
-      "role": "mature high-scale control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "14026026722",
+      "label": "Terminal [Escape Room]",
+      "role": "escape-room niche, low-visit control",
+      "baseline": {
+        "run_id": "43804553-8355-4d96-ba9a-b0f3f0d73d3c",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 18410,
+        "cost_usd": 0.00046670800000000003,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 6,
+        "claims_with_evidence": 6,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "aa52a2a1-7ab6-4dfd-afde-4380bbb0bcef",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 182003,
+        "cost_usd": 0.003490112,
+        "evidence_records": 51,
+        "distinct_sources": 31,
+        "claims": 8,
+        "claims_with_evidence": 7,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 2,
+        "model_turns": 10,
+        "tool_calls": 19,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_02",
-      "place_id": "2753915549",
-      "label": "Blox Fruits",
-      "role": "mature breakout control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "134162299584012",
+      "label": "Build a Gun Army",
+      "role": "trend-chasing \"build a\" clone",
+      "baseline": {
+        "run_id": "66caeb96-f1eb-449e-8306-69e5a2ea10d0",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 17003,
+        "cost_usd": 0.00043367700000000004,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 6,
+        "claims_with_evidence": 6,
+        "risk_claims": 2,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "108269d8-995e-487c-a4cd-e9e91202d48d",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 232938,
+        "cost_usd": 0.006009528,
+        "evidence_records": 44,
+        "distinct_sources": 26,
+        "claims": 8,
+        "claims_with_evidence": 8,
+        "risk_claims": 4,
+        "contradicting_evidence": 0,
+        "objections": 4,
+        "model_turns": 14,
+        "tool_calls": 32,
+        "initial_rating": "MODERATE",
+        "final_rating": "LOW",
+        "rating_lowered": true,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_03",
-      "place_id": "537413528",
-      "label": "Build A Boat For Treasure",
-      "role": "creative loop control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "101396571928321",
+      "label": "Merge a Spinner!",
+      "role": "HARD CASE: update spike vs durability",
+      "hard_case": true,
+      "baseline": {
+        "run_id": "1d1c58e9-ba00-4155-acd5-54ab243d5a94",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 19241,
+        "cost_usd": 0.000474227,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 6,
+        "claims_with_evidence": 6,
+        "risk_claims": 2,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "44805c7e-e129-4184-9771-234164477089",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 207810,
+        "cost_usd": 0.004223128,
+        "evidence_records": 51,
+        "distinct_sources": 38,
+        "claims": 7,
+        "claims_with_evidence": 7,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 4,
+        "model_turns": 11,
+        "tool_calls": 15,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_04",
-      "place_id": "155615604",
-      "label": "Prison Life",
-      "role": "legacy game control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "133294838637122",
+      "label": "Jump To Steal Soccer Players",
+      "role": "\"steal\" genre trend follower",
+      "baseline": {
+        "run_id": "40363afa-e078-4f4d-b316-51a74bb1a487",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 36678,
+        "cost_usd": 0.000366067,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 6,
+        "claims_with_evidence": 6,
+        "risk_claims": 2,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "HIGH",
+        "final_rating": "HIGH",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "42cbc7d6-5f59-44ff-b11d-79dd22b1d2d8",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 224457,
+        "cost_usd": 0.005014714,
+        "evidence_records": 45,
+        "distinct_sources": 27,
+        "claims": 9,
+        "claims_with_evidence": 9,
+        "risk_claims": 4,
+        "contradicting_evidence": 0,
+        "objections": 2,
+        "model_turns": 11,
+        "tool_calls": 14,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_05",
-      "place_id": "6284583030",
-      "label": "Pet Simulator X",
-      "role": "franchise comparator",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "90086669327265",
+      "label": "+1 Cut Grass Adventure",
+      "role": "incremental/idle trend follower",
+      "baseline": {
+        "run_id": "f5d659c9-636d-494e-8a82-cb57f2da21be",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 28554,
+        "cost_usd": 0.0005026620000000001,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 8,
+        "claims_with_evidence": 8,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "0072a746-2738-421e-9bc5-e35abaf17b2a",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 186935,
+        "cost_usd": 0.0026525560000000004,
+        "evidence_records": 45,
+        "distinct_sources": 26,
+        "claims": 10,
+        "claims_with_evidence": 10,
+        "risk_claims": 4,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 9,
+        "tool_calls": 13,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "incomplete"
       }
     },
     {
       "id": "case_06",
-      "place_id": "4924922222",
-      "label": "Brookhaven",
-      "role": "social roleplay control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "92637789841354",
+      "label": "Clean all the leaves!",
+      "role": "simulator trend follower",
+      "baseline": {
+        "run_id": "74ad7b42-ed18-4302-9c15-d440fe4b84ae",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 30907,
+        "cost_usd": 0.000658365,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 8,
+        "claims_with_evidence": 8,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "HIGH",
+        "final_rating": "HIGH",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "cd8ebd72-44d2-4b2e-b785-f3484bbf5223",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 184404,
+        "cost_usd": 0.005912512,
+        "evidence_records": 45,
+        "distinct_sources": 30,
+        "claims": 7,
+        "claims_with_evidence": 6,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 4,
+        "model_turns": 14,
+        "tool_calls": 14,
+        "initial_rating": "HIGH",
+        "final_rating": "MODERATE",
+        "rating_lowered": true,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_07",
-      "place_id": "606849621",
-      "label": "Jailbreak",
-      "role": "live-service control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "3016661674",
+      "label": "Rogue Lineage",
+      "role": "legacy durable niche control",
+      "baseline": {
+        "run_id": "4d79c03b-98d6-4f66-9322-659051a0ad81",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 14365,
+        "cost_usd": 0.000499158,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 8,
+        "claims_with_evidence": 7,
+        "risk_claims": 4,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "7c8db44e-5f55-4d84-85e8-339041c2d261",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 278331,
+        "cost_usd": 0.007062529999999999,
+        "evidence_records": 55,
+        "distinct_sources": 39,
+        "claims": 7,
+        "claims_with_evidence": 7,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 3,
+        "model_turns": 17,
+        "tool_calls": 18,
+        "initial_rating": "MODERATE",
+        "final_rating": "LOW",
+        "rating_lowered": true,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_08",
-      "place_id": "286090429",
-      "label": "Arsenal",
-      "role": "competitive action control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "119116892854064",
+      "label": "Debt Hunt",
+      "role": "recent horror/co-op release",
+      "baseline": {
+        "run_id": "3a21ce00-2487-4a93-9fc4-a67442af8867",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 23938,
+        "cost_usd": 0.000501462,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 7,
+        "claims_with_evidence": 7,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "1ed6f05c-076a-451b-823e-33782e847e20",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 154998,
+        "cost_usd": 0.0037861349999999995,
+        "evidence_records": 48,
+        "distinct_sources": 32,
+        "claims": 9,
+        "claims_with_evidence": 9,
+        "risk_claims": 4,
+        "contradicting_evidence": 0,
+        "objections": 3,
+        "model_turns": 9,
+        "tool_calls": 13,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_09",
-      "place_id": "6516141723",
-      "label": "DOORS",
-      "role": "horror breakout control",
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "10228136016",
+      "label": "Fallen Survival",
+      "role": "mid-age survival control",
+      "baseline": {
+        "run_id": "459bb2b2-7e2e-49e8-ba87-a8c704e0f9f1",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 29559,
+        "cost_usd": 0.000526568,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 7,
+        "claims_with_evidence": 6,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "271a5ced-ea8a-40ef-a346-709314cfe451",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 231785,
+        "cost_usd": 0.006149303648,
+        "evidence_records": 51,
+        "distinct_sources": 38,
+        "claims": 8,
+        "claims_with_evidence": 8,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 3,
+        "model_turns": 12,
+        "tool_calls": 17,
+        "initial_rating": "MODERATE",
+        "final_rating": "MODERATE",
+        "rating_lowered": false,
+        "verification_status": "completed"
       }
     },
     {
       "id": "case_10",
-      "place_id": "8737899170",
-      "label": "Contradictory cached case",
-      "role": "hard case: update spike vs durability",
-      "fixture": true,
-      "baseline_run_id": null,
-      "full_run_id": null,
-      "rubric": [
-        {
-          "id": "quantitative_signals",
-          "label": "Important current quantitative signals",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "external_context",
-          "label": "Relevant external context and defensible comparables",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "epistemic_labels",
-          "label": "Facts separated from inference",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "evidence_links",
-          "label": "Material claims link to evidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "counterevidence",
-          "label": "Uncertainty and counterevidence",
-          "max": 5,
-          "score": null
-        },
-        {
-          "id": "recommendation",
-          "label": "Useful and proportionate recommendation",
-          "max": 5,
-          "score": null
-        }
-      ],
-      "measurements": {
-        "runtime_ms": null,
-        "estimated_cost_usd": null,
-        "provider_failures": null,
-        "evidence_coverage": null,
-        "unsupported_claims": null
+      "place_id": "107778070777162",
+      "label": "Steal An Egg",
+      "role": "breakout-adjacent \"steal\" genre",
+      "baseline": {
+        "run_id": "ecf47a92-7d44-48de-a580-b6be664beead",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 43120,
+        "cost_usd": 0.000550107,
+        "evidence_records": 5,
+        "distinct_sources": 1,
+        "claims": 7,
+        "claims_with_evidence": 6,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 0,
+        "model_turns": 2,
+        "tool_calls": 0,
+        "initial_rating": "HIGH",
+        "final_rating": "HIGH",
+        "rating_lowered": false,
+        "verification_status": "disabled"
+      },
+      "solution": {
+        "run_id": "35a05426-8163-43f8-bed3-a71cef3d5f41",
+        "state": "COMPLETED",
+        "error": null,
+        "runtime_ms": 138907,
+        "cost_usd": 0.005345287984,
+        "evidence_records": 41,
+        "distinct_sources": 19,
+        "claims": 8,
+        "claims_with_evidence": 8,
+        "risk_claims": 3,
+        "contradicting_evidence": 0,
+        "objections": 3,
+        "model_turns": 16,
+        "tool_calls": 18,
+        "initial_rating": "HIGH",
+        "final_rating": "MODERATE",
+        "rating_lowered": true,
+        "verification_status": "completed"
       }
     }
   ]

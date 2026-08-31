@@ -17,9 +17,11 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:roblox-contract": "tsx scripts/roblox-contract-smoke.ts",
+    "trajectory": "pnpm --filter @cronoblox/evaluation trajectory",
     "db:generate": "pnpm --filter @cronoblox/db generate",
     "db:migrate": "pnpm --filter @cronoblox/db migrate",
     "db:seed": "pnpm --filter @cronoblox/db seed",
+    "evaluate:sweep": "pnpm --filter @cronoblox/evaluation sweep",
     "evaluate": "pnpm --filter @cronoblox/evaluation evaluate"
   },
   "devDependencies": {

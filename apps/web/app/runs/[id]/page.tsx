@@ -2,7 +2,7 @@
 
 import { use, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, Circle, Clock3, ExternalLink, LoaderCircle, ShieldAlert, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, Circle, Clock3, ExternalLink, FileText, ListTree, LoaderCircle, ShieldAlert, X } from "lucide-react";
 import type { BreakoutPotential, Evidence, Report, RunEvent } from "@cronoblox/contracts";
 
 type RunDetail = { run: import("@cronoblox/contracts").RunSummary; events: RunEvent[]; report: Report | null };
@@ -20,9 +20,35 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
   const { id } = use(params);
   const query = useQuery({ queryKey: ["run", id], queryFn: () => fetchRun(id), refetchInterval: (result) => { const state = result.state.data?.run.state; return state && !["COMPLETED", "FAILED", "CANCELLED"].includes(state) ? 1000 : false; } });
   const data = query.data;
+  const { view, switchView } = useRunView();
   if (query.isLoading) return <LoadingPage />;
   if (query.isError || !data) return <main className="run-shell"><RunHeader /><div className="run-error"><AlertTriangle /><h1>Investigation unavailable</h1><p>{query.error?.message ?? "Run not found"}</p><a href="/">Return home</a></div></main>;
-  return <main className="run-shell"><RunHeader />{data.report ? <ReportView report={data.report} /> : <ProgressView detail={data} onRefresh={() => query.refetch()} />}</main>;
+  return <main className="run-shell"><RunHeader />{data.report
+    ? <><RunTabs view={view} onChange={switchView} steps={data.events.length} /><div hidden={view !== "report"}><ReportView report={data.report} /></div>{view === "trajectory" && <TrajectoryView detail={data} />}</>
+    : <ProgressView detail={data} onRefresh={() => query.refetch()} />}</main>;
+}
+
+/**
+ * A finished run still has to be able to show how it got there. The report is the default view;
+ * `?view=trajectory` deep-links straight to the agent trace so a reviewer can be handed one URL.
+ */
+function useRunView() {
+  const [view, setView] = useState<"report" | "trajectory">("report");
+  useEffect(() => { if (new URLSearchParams(window.location.search).get("view") === "trajectory") setView("trajectory"); }, []);
+  const switchView = (next: "report" | "trajectory") => {
+    setView(next);
+    const url = new URL(window.location.href);
+    if (next === "trajectory") url.searchParams.set("view", "trajectory"); else url.searchParams.delete("view");
+    window.history.replaceState(null, "", url);
+  };
+  return { view, switchView };
+}
+
+function RunTabs({ view, onChange, steps }: { view: "report" | "trajectory"; onChange: (next: "report" | "trajectory") => void; steps: number }) {
+  return <div className="run-tabs" role="tablist" aria-label="Run views">
+    <button role="tab" aria-selected={view === "report"} className={view === "report" ? "active" : ""} onClick={() => onChange("report")}><FileText /> REPORT</button>
+    <button role="tab" aria-selected={view === "trajectory"} className={view === "trajectory" ? "active" : ""} onClick={() => onChange("trajectory")}><ListTree /> AGENT TRAJECTORY <em>{steps}</em></button>
+  </div>;
 }
 
 function RunHeader() { return <header className="topbar run-topbar"><a className="brand" href="/" aria-label="Cronoblox home"><img className="brand-logo" src="/cronoblox-logo.png" alt="Cronoblox" width={160} height={22} /></a><a className="back-link" href="/"><ArrowLeft /> <span>NEW AUDIT</span></a></header>; }
@@ -126,6 +152,73 @@ function ProgressView({ detail, onRefresh }: { detail: RunDetail; onRefresh: () 
     {detail.run.state === "FAILED" ? <div className="failure-box"><ShieldAlert /><div><strong>The run stopped safely</strong><p>{detail.run.error}</p></div><button onClick={() => action("retry")}>RETRY RUN</button></div>
       : detail.run.state === "CANCELLED" ? <div className="failure-box"><div><strong>Investigation cancelled</strong><p>Captured evidence remains available in the database.</p></div><button onClick={() => action("retry")}>RETRY RUN</button></div>
       : <button className="cancel-button" onClick={() => action("cancel")}>CANCEL INVESTIGATION</button>}
+  </div>;
+}
+
+/* ---------------------------------------------------------------- trajectory */
+
+const AGENT_ORDER = ["engine", "roblox-data", "orchestrator", "data-agent", "market-intelligence", "critic"];
+
+/**
+ * Deliverable-grade agent trace: every model turn, every tool call with its real arguments, every
+ * tool response time, and the reason a loop was forced to wrap up. Read oldest-first — a trajectory
+ * is a story, unlike the live log which is newest-first so the reader never chases a moving bottom.
+ */
+function TrajectoryView({ detail }: { detail: RunDetail }) {
+  const events = useMemo(() => [...detail.events].sort((a, b) => a.sequence - b.sequence), [detail.events]);
+  const stats = useMemo(() => {
+    let toolCalls = 0, delegations = 0, modelTurns = 0, promptTokens = 0, completionTokens = 0;
+    const agents = new Set<string>();
+    for (const event of events) {
+      const [head = ""] = event.event_type.split(".");
+      if (AGENT_ORDER.includes(head) && head !== "engine") agents.add(head);
+      if (event.event_type.endsWith(".tool_call")) { if (String(event.data.tool ?? "").startsWith("call_")) delegations += 1; else toolCalls += 1; }
+      if (event.event_type.endsWith(".llm_result")) {
+        modelTurns += 1;
+        promptTokens += Number(event.data.prompt_tokens ?? 0);
+        completionTokens += Number(event.data.completion_tokens ?? 0);
+      }
+    }
+    return { agents: [...agents].sort((a, b) => AGENT_ORDER.indexOf(a) - AGENT_ORDER.indexOf(b)), toolCalls, delegations, modelTurns, promptTokens, completionTokens };
+  }, [events]);
+
+  const started = Date.parse(detail.run.created_at);
+
+  return <div className="trajectory-page">
+    <section className="trajectory-stats">
+      <div><span>AGENTS</span><strong>{stats.agents.length}</strong><small>{stats.agents.join(" · ") || "—"}</small></div>
+      <div><span>MODEL TURNS</span><strong>{stats.modelTurns}</strong><small>{stats.promptTokens.toLocaleString()} in · {stats.completionTokens.toLocaleString()} out</small></div>
+      <div><span>EXTERNAL TOOL CALLS</span><strong>{stats.toolCalls}</strong><small>{detail.run.profile_snapshot.limits.max_external_calls} allowed · {stats.delegations} sub-agent {stats.delegations === 1 ? "delegation" : "delegations"}</small></div>
+      <div><span>PROFILE</span><strong>{detail.run.profile_snapshot.label}</strong><small>{detail.run.profile_snapshot.model}</small></div>
+    </section>
+
+    <section className="event-log">
+      <div className="section-title"><span>FULL AGENT TRAJECTORY</span><small>{events.length} steps · oldest first · no private chain-of-thought</small></div>
+      <div className="event-stream trajectory-stream">
+        {events.map((event) => {
+          const [rawHead = "", ...rawRest] = event.event_type.split(".");
+          // `module.roblox-data.completed` names the module in segment two; every other agent event
+          // carries the agent in segment one.
+          const [head, rest] = rawHead === "module" && rawRest.length > 1 ? [rawRest[0]!, rawRest.slice(1)] : [rawHead, rawRest];
+          const isAgent = head !== "state" && head !== "run" && rest.length > 0;
+          const args = event.data.args && typeof event.data.args === "object" ? JSON.stringify(event.data.args) : null;
+          const offset = Math.max(0, Date.parse(event.created_at) - started);
+          return <article key={event.id} className={event.level}>
+            <time>+{formatElapsed(offset)}</time>
+            <div>
+              <div className="event-actor">
+                <strong>{isAgent ? head.replaceAll("-", " ") : "engine"}</strong>
+                <em>{isAgent ? rest.join(" ").replaceAll("_", " ") : event.state.replaceAll("_", " ")}</em>
+                {typeof event.data.tool === "string" && <em className="tool-chip">{event.data.tool}</em>}
+              </div>
+              <p>{event.message}</p>
+              {args && args !== "{}" && <pre className="tool-args">{args.length > 400 ? `${args.slice(0, 400)}…` : args}</pre>}
+              {typeof event.data.duration_ms === "number" && <small className="event-timing">{(event.data.duration_ms / 1000).toFixed(1)}s{typeof event.data.completion_tokens === "number" ? ` · ${event.data.completion_tokens} output tokens` : ""}</small>}
+            </div>
+          </article>;
+        })}
+      </div>
+    </section>
   </div>;
 }
 

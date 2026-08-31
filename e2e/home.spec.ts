@@ -36,3 +36,25 @@ test("an incomplete critic review is never presented as successful verification"
   await expect(page.getByText("UNVERIFIED RATING", { exact: true })).toBeVisible();
   await expect(page.getByText(/Rating survived verification|Rating lowered after verification/)).toHaveCount(0);
 });
+
+test("a completed run can still show the agent trajectory, including via a deep link", async ({ page }) => {
+  const events = [
+    { id: "ev-1", run_id: "e2e-run", sequence: 0, state: "EXECUTE", level: "info", event_type: "orchestrator.llm_result", message: "orchestrator's model replied in 4.0s (turn 1)", data: { iteration: 1, duration_ms: 3985, prompt_tokens: 2152, completion_tokens: 460 }, created_at: "2026-08-29T12:00:04.000Z" },
+    { id: "ev-2", run_id: "e2e-run", sequence: 1, state: "EXECUTE", level: "info", event_type: "data-agent.tool_call", message: "data-agent called roblox_search_peers — merge tycoon", data: { tool: "roblox_search_peers", args: { query: "merge tycoon" }, detail: "merge tycoon" }, created_at: "2026-08-29T12:00:05.000Z" },
+  ];
+  await page.route("**/api/runs/e2e-run", (route) => route.fulfill({ json: { run: { ...run, state: "COMPLETED" }, events, report } }));
+
+  // The report is the default view, and the trajectory must remain reachable from it.
+  await page.goto("/runs/e2e-run");
+  await expect(page.getByText("BREAKOUT POTENTIAL")).toBeVisible();
+  await page.getByRole("tab", { name: /AGENT TRAJECTORY/ }).click();
+  await expect(page.getByText("FULL AGENT TRAJECTORY")).toBeVisible();
+  await expect(page.getByText("data-agent called roblox_search_peers — merge tycoon")).toBeVisible();
+  await expect(page.getByText('{"query":"merge tycoon"}')).toBeVisible();
+  await expect(page).toHaveURL(/view=trajectory/);
+
+  // A judge handed only the deep link lands on the trace directly.
+  await page.goto("/runs/e2e-run?view=trajectory");
+  await expect(page.getByText("FULL AGENT TRAJECTORY")).toBeVisible();
+  await expect(page.getByRole("tab", { name: /AGENT TRAJECTORY/ })).toHaveAttribute("aria-selected", "true");
+});

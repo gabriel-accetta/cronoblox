@@ -437,3 +437,23 @@ h1 em { color: var(--accent); font-style: normal; }
   .back-link span { display: none; }
   .back-link svg { width: 17px; }
 }
+
+/* run view tabs + full agent trajectory (deliverable: agent trajectories) */
+.run-tabs { display: flex; gap: 6px; padding: 0 0 14px; }
+.run-tabs button { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--muted); font: 600 10px var(--font-mono); letter-spacing: .09em; cursor: pointer; }
+.run-tabs button svg { width: 13px; height: 13px; }
+.run-tabs button:hover { color: var(--text); border-color: var(--line-strong, var(--line)); }
+.run-tabs button.active { color: var(--accent); border-color: var(--accent); background: var(--accent-wash); }
+.run-tabs em { font-style: normal; font-size: 9px; color: var(--muted-dim); }
+.trajectory-page { display: grid; gap: 16px; }
+.trajectory-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.trajectory-stats > div { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 14px 16px; }
+.trajectory-stats span { display: block; font: 500 9px var(--font-mono); color: var(--muted-dim); letter-spacing: .11em; }
+.trajectory-stats strong { display: block; margin: 7px 0 4px; font-size: 20px; font-weight: 600; }
+.trajectory-stats small { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.trajectory-stream { max-height: none; }
+.trajectory-stream time { color: var(--accent); }
+.tool-chip { background: var(--accent-wash) !important; color: var(--accent) !important; }
+.tool-args { margin: 7px 0 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-3); color: var(--muted); font: 400 10.5px/1.55 var(--font-mono); white-space: pre-wrap; word-break: break-word; overflow-x: auto; }
+.event-timing { display: block; margin-top: 6px; font: 400 10px var(--font-mono); color: var(--muted-dim); }
+@media (max-width: 720px) { .run-tabs { flex-wrap: wrap; } }

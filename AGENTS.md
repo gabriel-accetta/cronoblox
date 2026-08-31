@@ -13,7 +13,8 @@ Strict TypeScript pnpm monorepo, modular monolith + one background worker. All p
    - `orchestrator` (required) — an LLM agent that forms the `Thesis`. May optionally call `data-agent` / `market-intelligence` as tools.
    - `critic` (optional, profile-gated) — verifies the thesis; if it raises unresolved high-severity objections, the engine loops orchestrator→critic again (up to `profile.limits.max_critic_cycles`), then applies `evaluateStoppingRule` (`packages/engine/src/stopping.ts`).
    - `FINALIZE` assembles the `Report`, and `assertReportEvidence` (in `packages/contracts`) throws if any claim/evidence id in the report isn't a real, persisted evidence record — the anti-hallucination gate of last resort.
-4. Postgres (`packages/db`, Drizzle) stores everything durable: runs, run_modules, run_steps, run_events, raw_artifacts, evidence, reports, provider_cache, evaluation_scores, analysis_profiles. Redis/BullMQ never stores results.
+4. A completed run's page defaults to the report and keeps the agent trace reachable at `?view=trajectory` (`RunTabs`/`TrajectoryView` in `apps/web/app/runs/[id]/page.tsx`) — a finished run must still be able to show how it got there.
+5. Postgres (`packages/db`, Drizzle) stores everything durable: runs, run_modules, run_steps, run_events, raw_artifacts, evidence, reports, provider_cache, evaluation_scores, analysis_profiles. Redis/BullMQ never stores results.
 
 ## Module system (packages/module-sdk)
 
@@ -55,7 +56,7 @@ A single `RunBudget` (`createRunBudget`, in agent-core) is shared across *every*
 | `packages/db` | Drizzle schema + repository functions over Postgres |
 | `packages/config` | The four fixed, immutable `ProfileSnapshot`s (see below) |
 | `packages/llm` | `FixtureAnalyst` — deterministic keyless thesis generator, used only by `demo-replay` |
-| `packages/evaluation` | Runs frozen test cases, emits unscored JSON/Markdown for human rubric review |
+| `packages/evaluation` | Frozen case set + the paired baseline/full sweep, the DB-backed comparison report, and the trajectory exporter |
 
 ## Profiles (packages/config)
 
@@ -76,9 +77,11 @@ Four fixed profiles select which modules/tools run and the run's limits; a profi
 ## Root-level non-package folders
 
 - `tests/` — Vitest suite (`vitest.config.ts` includes only `tests/**/*.test.ts`, not colocated specs). All deterministic, no real DB/Redis/LLM/network. `contracts.test.ts` (evidence schema, append-only, `assertReportEvidence`), `registry.test.ts` (module order/uniqueness/profile gating), `stopping.test.ts` (`evaluateStoppingRule` table tests), `sources.test.ts` (`parsePlaceId` URL parsing), `openrouter.test.ts` (stubs `fetch` to assert `runAgentLoop` hits OpenRouter correctly), `fixture-flow.test.ts` (runs the real `registry`/`ModuleRunner` through the `demo-replay` profile end-to-end — the closest thing to an integration test here).
-- `e2e/home.spec.ts` — Playwright, driven by `playwright.config.ts` (spins up `pnpm dev:web` on `127.0.0.1:3017`). Mocks `/api/runs*` at the network layer with hand-built fixture `run`/`evidence`/`report` payloads, so it tests `apps/web`'s rendering/polling, not a real worker run.
+- `e2e/home.spec.ts` — Playwright, driven by `playwright.config.ts` (spins up `pnpm dev:web` on `127.0.0.1:3017`). Mocks `/api/runs*` at the network layer with hand-built fixture `run`/`evidence`/`report` payloads, so it tests `apps/web`'s rendering/polling, not a real worker run. Covers the report flow, the failed-run timer, the incomplete-verification banner, and that a completed run can still reach its trajectory (tab click and `?view=trajectory` deep link).
 - `scripts/roblox-contract-smoke.ts` — the one test that hits the **real** live Roblox API (`pnpm test:roblox-contract`, not part of `pnpm test`/CI-blocking). A canary for undocumented-endpoint drift.
-- `packages/evaluation/` + `evaluation-output/` — two halves of one thing. `packages/evaluation/{cases.json,rubric.json}` are frozen hand-authored cases + rubric dimensions; `pnpm evaluate` reads them and writes `evaluation-output/evaluation.{json,md}` as **unscored templates** (`baseline_run_id`/`full_run_id`/measurements all null). It runs no analyses itself — the workflow is: manually run each case through `baseline` and `full`, fill in real run ids/measurements, then a human scores the rubric. `evaluation-output/` is generated output, not source.
+- `packages/evaluation/` + `evaluation-output/` — two halves of one thing. `packages/evaluation/cases.json` is the frozen case set (ten live place ids, the profiles/effort/user mode both sides must share, the primary metric, and the hand-written hard-case finding). Two commands: `pnpm evaluate:sweep` (`src/sweep.ts`) POSTs every case to `/api/runs` twice — once on `baseline`, once on `full` — and only enqueues, so it is safe to re-run or interrupt; `pnpm evaluate` (`src/index.ts`) then reads those runs back **out of Postgres** and writes `evaluation-output/evaluation.{json,md}`. Every number is computed from persisted `runs`/`reports`/`evidence`/`run_events` rows — nothing is hand-entered and no rubric is hand-scored. It picks the newest run per (place_id, profile) matching the frozen effort/user mode, and reports non-COMPLETED runs as preserved failures rather than skipping them. `evaluation-output/` is generated output, not source.
+- `packages/evaluation/src/trajectory.ts` (`pnpm trajectory <run-id>...`) — exports a run's full agent trace to `trajectories/*.md`: every model turn, tool call with real arguments, tool timing, token counts, forced-finalize reason, and the final report. Same data the in-app trajectory tab renders; the folder exists so the trace is readable without running the stack.
+- `trajectories/` — generated output. Four committed representative traces (baseline control, a run where the critic lowered the rating, the hard case, and a run that degraded to an unverified draft).
 - `docker-compose.yml` — only the two stateful deps for local dev: `postgres:16-alpine` (`5434→5432`) and `redis:7-alpine` (`6381→6379`), named volumes + healthchecks. `apps/web`/`apps/worker` are never containerized; always run via `pnpm dev:*`.
 
 ## Commands
@@ -90,7 +93,9 @@ pnpm test:e2e         # playwright critical flow
 pnpm test:roblox-contract  # optional live public-endpoint smoke test
 pnpm dev:web / dev:worker  # run app + worker in separate terminals
 pnpm db:migrate / db:seed
-pnpm evaluate         # emit unscored eval JSON/Markdown to evaluation-output/
+pnpm evaluate:sweep   # enqueue the frozen cases on both the baseline and full profiles
+pnpm evaluate         # read those runs back from Postgres into evaluation-output/
+pnpm trajectory <id>  # export one run's agent trace to trajectories/*.md
 ```
 
 Local ports (fixed, non-default to avoid clashing with other stacks): web `3017`, Postgres `5434`, Redis `6381`. `OPENROUTER_API_KEY` required for any non-fixture profile; `BRAVE_SEARCH_API_KEY` optional (web search degrades without it); YouTube needs no key but needs `yt-dlp` installed on the worker host.
