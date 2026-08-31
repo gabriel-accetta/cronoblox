@@ -31,10 +31,10 @@ export function parsePlaceId(value: string): string {
   const trimmed = value.trim();
   if (/^\d+$/.test(trimmed)) return trimmed;
   let url: URL;
-  try { url = new URL(trimmed); } catch { throw new Error("Enter a public Roblox game URL or numeric place ID."); }
+  try { url = new URL(trimmed); } catch { throw new Error("Enter a public Roblox game URL or numeric experience ID."); }
   if (!/(^|\.)roblox\.com$/i.test(url.hostname)) throw new Error("The URL must be on roblox.com.");
   const match = url.pathname.match(/\/games\/(\d+)/i);
-  if (!match?.[1]) throw new Error("The Roblox URL does not contain a place ID.");
+  if (!match?.[1]) throw new Error("The Roblox URL does not contain a place or experience ID.");
   return match[1];
 }
 
@@ -57,13 +57,24 @@ export class RobloxSource {
   async audit(input: string, signal: AbortSignal): Promise<{ core: RobloxCore; raw: Record<string, unknown>; calls: number; warnings: string[] }> {
     const placeId = parsePlaceId(input);
     const identityUrl = `https://apis.roblox.com/universes/v1/places/${placeId}/universe`;
-    const identity = await fetchJson(identityUrl, universeSchema, signal);
-    const universeId = String(identity.universeId);
+    let identity: z.infer<typeof universeSchema> | null = null;
+    let universeId: string;
+    try {
+      identity = await fetchJson(identityUrl, universeSchema, signal);
+      universeId = String(identity.universeId);
+    } catch (error) {
+      // Roblox's public game page uses a place ID, while creators and some tools share
+      // the experience (universe) ID. A numeric input is ambiguous, so resolve it as
+      // a universe ID when it is not a known place ID.
+      if (!/^\d+$/.test(input.trim()) || !(error instanceof ProviderError) || error.status !== 404) throw error;
+      universeId = placeId;
+    }
     const coreUrl = `https://games.roblox.com/v1/games?universeIds=${universeId}`;
     const coreResult = await fetchJson(coreUrl, gameSchema, signal);
     const game = coreResult.data[0];
     if (!game) throw new ProviderError("roblox", 404, "No public game record was returned.", false);
-    if (String(game.rootPlaceId) !== placeId) throw new ProviderError("roblox", 409, "Resolved game identity did not match the submitted place.", false);
+    const resolvedPlaceId = String(game.rootPlaceId);
+    if (identity && resolvedPlaceId !== placeId) throw new ProviderError("roblox", 409, "Resolved game identity did not match the submitted place.", false);
     const warnings: string[] = [];
     const settled = await Promise.allSettled([
       fetchJson(`https://games.roblox.com/v1/games/votes?universeIds=${universeId}`, votesSchema, signal),
@@ -85,7 +96,7 @@ export class RobloxSource {
     const thumbnails = ((shotResult?.status === "fulfilled" ? (shotResult.value.data ?? [])[0]?.thumbnails : null) ?? [])
       .map((item) => ready(item.state, item.imageUrl)).filter((item): item is string => item !== null);
     if (iconResult?.status === "rejected" && shotResult?.status === "rejected") warnings.push("Game imagery unavailable");
-    return { core: { ...game, placeId, universeId, votes, badges, recommendations, iconUrl, thumbnails }, raw: { identity, game: coreResult, votes: settled[0], badges: settled[1], recommendations: settled[2], icon: iconResult, thumbnails: shotResult }, calls: 7, warnings };
+    return { core: { ...game, placeId: resolvedPlaceId, universeId, votes, badges, recommendations, iconUrl, thumbnails }, raw: { identity, game: coreResult, votes: settled[0], badges: settled[1], recommendations: settled[2], icon: iconResult, thumbnails: shotResult }, calls: 7, warnings };
   }
 
   async searchPeers(query: string, signal: AbortSignal) {

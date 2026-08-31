@@ -59,6 +59,7 @@ describe("agent loop budget enforcement", () => {
     // Iteration 1 runs a real search; from iteration 2 the loop is forced and must refuse the rest.
     expect(executed).toBe(1);
     expect(events.filter((event) => event.type === "tool_refused")).not.toHaveLength(0);
+    expect(events.find((event) => event.type === "tool_refused")?.reason).toMatch(/model turn limit reached/);
   });
 
   it("stops spending once the loop's own external-call allowance is gone", async () => {
@@ -67,8 +68,10 @@ describe("agent loop budget enforcement", () => {
       [{ name: "search", args: { q: "a" } }, { name: "search", args: { q: "b" } }, { name: "search", args: { q: "c" } }],
       [{ name: "submit", args: { verdict: "done" } }],
     ]);
-    await run([countingTool(() => { executed += 1; })], 8, 2);
+    const events: AgentEvent[] = [];
+    await run([countingTool(() => { executed += 1; })], 8, 2, events);
     expect(executed).toBe(2);
+    expect(events.find((event) => event.type === "tool_refused")?.reason).toMatch(/agent tool-call allowance reached/);
   });
 
   it("serves a repeated identical tool call from cache without spending the allowance", async () => {

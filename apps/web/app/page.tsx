@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, CheckCircle2, ChevronDown, CircleDot, Clock3, LockKeyhole, Radar, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, CircleDot, Clock3, LockKeyhole, Radar, ShieldCheck, Sparkles } from "lucide-react";
 import type { Effort, RunSummary, UserMode } from "@cronoblox/contracts";
 
 const audits = [
@@ -28,8 +28,19 @@ export default function HomePage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recent, setRecent] = useState<RunSummary[]>([]);
+  const [collapsedFormHeight, setCollapsedFormHeight] = useState<number | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => { fetch("/api/runs").then((r) => r.ok ? r.json() : { runs: [] }).then((data) => setRecent(data.runs ?? [])).catch(() => undefined); }, []);
+  useEffect(() => {
+    if (advanced || !formRef.current) return;
+    const form = formRef.current;
+    const measure = () => setCollapsedFormHeight(Math.ceil(form.getBoundingClientRect().height));
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(form);
+    return () => observer.disconnect();
+  }, [advanced]);
   const selectedModules = profile === "baseline" ? ["roblox-data"] : profile === "research-no-critic" ? ["roblox-data", "market-intelligence"] : ["roblox-data", "market-intelligence", "critic"];
 
   async function submit(event: React.FormEvent) {
@@ -45,16 +56,17 @@ export default function HomePage() {
   return (
     <main className="app-shell">
       <SiteHeader />
-      <section className="hero-grid">
-        <div className="hero-copy">
-          <h1>Find the signal<br />before the <em>hype.</em></h1>
-          <p className="lede">Cronoblox investigates one Roblox game, tests the breakout thesis, and shows every piece of evidence behind the call.</p>
-          <div className="promise-row"><span><CheckCircle2 /> No fake probability</span><span><CheckCircle2 /> Every claim sourced</span></div>
+      <section className={`hero-grid ${collapsedFormHeight ? "hero-grid-locked" : ""}`}>
+        <div className="hero-copy-slot" style={collapsedFormHeight ? { minHeight: collapsedFormHeight } : undefined}>
+          <div className="hero-copy">
+            <h1>Find the signal<br />before the <em>hype.</em></h1>
+            <p className="lede">Cronoblox investigates one Roblox game, tests the breakout thesis, and shows every piece of evidence behind the call.</p>
+          </div>
         </div>
 
-        <form className="launch-card" onSubmit={submit}>
-          <div className="card-kicker"><span>NEW INVESTIGATION</span><b>01</b></div>
-          <label htmlFor="game-url">ROBLOX GAME URL OR PLACE ID</label>
+        <form className="launch-card" ref={formRef} onSubmit={submit}>
+          <div className="card-kicker"><span>NEW INVESTIGATION</span></div>
+          <label htmlFor="game-url">ROBLOX GAME URL OR EXPERIENCE ID</label>
           <div className="url-field"><span>rbx://</span><input id="game-url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="roblox.com/games/123456789/..." required /></div>
           <div className="choice-row" role="radiogroup" aria-label="Report emphasis">
             <button className={`choice ${mode === "developer" ? "active" : ""}`} type="button" role="radio" aria-checked={mode === "developer"} onClick={() => setMode("developer")}><span>DEVELOPER</span><small>Product signals & next moves</small></button>
@@ -85,7 +97,7 @@ export default function HomePage() {
       </section>
 
       <section className="recent-section">
-        <div className="strip-heading"><span>RECENT INVESTIGATIONS</span><small>Immutable profiles make every run reproducible.</small></div>
+        <div className="strip-heading"><span>RECENT INVESTIGATIONS</span></div>
         {recent.length === 0 ? <div className="empty-runs"><Clock3 /><p>No investigations yet. Run the cached demo to see the complete flow without API keys.</p></div> : <div className="recent-list">{recent.map((run) => <a href={`/runs/${run.id}`} key={run.id}><span className={`run-state ${run.state.toLowerCase()}`}>{run.state}</span><strong>{run.game_name ?? run.input.game_url}</strong><small>{run.profile_snapshot.label} · {new Date(run.created_at).toLocaleString()}</small><ArrowRight /></a>)}</div>}
       </section>
     </main>
@@ -93,5 +105,5 @@ export default function HomePage() {
 }
 
 function SiteHeader() {
-  return <header className="topbar"><a className="brand" href="/" aria-label="Cronoblox home"><img className="brand-logo" src="/cronoblox-logo.png" alt="Cronoblox" width={160} height={22} /></a><div className="status-chip"><span /> SYSTEM READY</div></header>;
+  return <header className="topbar home-topbar"><a className="brand" href="/" aria-label="Cronoblox home"><img className="brand-logo" src="/cronoblox-logo.png" alt="Cronoblox" width={160} height={22} /></a><a className="github-link" href="https://github.com/gabriel-accetta/cronoblox" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.5 5.74.5 12.02c0 5.1 3.29 9.42 7.86 10.95.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.26 5.69.41.36.78 1.06.78 2.14 0 1.55-.01 2.8-.01 3.18 0 .31.21.68.8.56A11.53 11.53 0 0 0 23.5 12.02C23.5 5.74 18.27.5 12 .5Z" /></svg><span>gabriel-accetta/cronoblox</span></a></header>;
 }

@@ -6,7 +6,7 @@ const report = { run_id: "e2e-run", game: { name: "Build A Boat Odyssey", place_
 
 test("home exposes the core submission flow", async ({ page }) => {
   await page.route("**/api/runs", async (route) => route.request().method() === "GET" ? route.fulfill({ json: { runs: [] } }) : route.continue());
-  await page.goto("/"); await expect(page.getByRole("heading", { name: /Find the signal/ })).toBeVisible(); await expect(page.getByLabel("ROBLOX GAME URL OR PLACE ID")).toBeVisible(); await expect(page.getByRole("button", { name: /RUN THE AUDIT/ })).toBeVisible();
+  await page.goto("/"); await expect(page.getByRole("heading", { name: /Find the signal/ })).toBeVisible(); await expect(page.getByLabel("ROBLOX GAME URL OR EXPERIENCE ID")).toBeVisible(); await expect(page.getByRole("button", { name: /RUN THE AUDIT/ })).toBeVisible();
 });
 
 test("submits, follows visible progress, opens report and evidence", async ({ page }) => {
@@ -14,7 +14,7 @@ test("submits, follows visible progress, opens report and evidence", async ({ pa
   await page.route("**/api/runs", async (route) => route.request().method() === "POST" ? route.fulfill({ status: 201, json: { run_id: "e2e-run", state: "QUEUED" } }) : route.fulfill({ json: { runs: [] } }));
   await page.route("**/api/runs/e2e-run/evidence", async (route) => route.fulfill({ json: { evidence: [evidence] } }));
   await page.route("**/api/runs/e2e-run", async (route) => { detailReads += 1; await route.fulfill({ json: detailReads === 1 ? { run, events: [{ id: "event-1", run_id: "e2e-run", sequence: 0, state: "COLLECT_CORE", level: "info", event_type: "state.collect_core", message: "Resolving game identity and collecting current Roblox evidence", data: {}, created_at: "2026-08-29T12:00:00.000Z" }], report: null } : { run: { ...run, state: "COMPLETED" }, events: [], report } }); });
-  await page.goto("/"); await page.getByLabel("ROBLOX GAME URL OR PLACE ID").fill("8737899170"); await page.getByLabel("ANALYSIS PROFILE").selectOption("demo-replay"); await page.getByRole("button", { name: /RUN THE AUDIT/ }).click();
+  await page.goto("/"); await page.getByLabel("ROBLOX GAME URL OR EXPERIENCE ID").fill("8737899170"); await page.getByLabel("ANALYSIS PROFILE").selectOption("demo-replay"); await page.getByRole("button", { name: /RUN THE AUDIT/ }).click();
   await expect(page).toHaveURL(/\/runs\/e2e-run/); await expect(page.getByText("VISIBLE TRAJECTORY")).toBeVisible(); await expect(page.getByText("Resolving game identity and collecting current Roblox evidence")).toBeVisible();
   await expect(page.getByText("BREAKOUT POTENTIAL")).toBeVisible({ timeout: 5000 }); await expect(page.getByText("HIGH", { exact: true }).first()).toBeVisible();
   await page.getByRole("button", { name: /Roblox data/ }).click(); await expect(page.getByText("EVIDENCE WORKSPACE")).toBeVisible(); await expect(page.getByText(/3,821 concurrent players/)).toBeVisible();

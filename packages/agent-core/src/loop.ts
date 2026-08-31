@@ -20,10 +20,12 @@ export interface AgentBudget {
   /** Records spend and returns whether the run-wide budget still has room. */
   spend(externalCalls: number, costUsd: number): boolean;
   exhausted(): boolean;
+  /** Explains which run-wide budget dimension is exhausted, if any. */
+  exhaustionReason(): string | null;
 }
 
 export type AgentEvent =
-  | { type: "llm_call"; iteration: number; forced: boolean }
+  | { type: "llm_call"; iteration: number; forced: boolean; forcedReason?: string }
   | { type: "tool_call"; iteration: number; name: string; args: unknown }
   | { type: "tool_error"; iteration: number; name: string; detail: string }
   | { type: "tool_refused"; iteration: number; name: string; reason: string }
@@ -87,6 +89,8 @@ export async function runAgentLoop<R>(options: {
   // we also refuse to run any other tool, which is what actually guarantees termination.
   const hardCap = budget.maxIterations + 3;
   const callsSpent = () => budget.exhausted() || localExternalCalls >= budget.maxExternalCalls;
+  const forcedReason = () => budget.exhaustionReason()
+    ?? (localExternalCalls >= budget.maxExternalCalls ? `agent tool-call allowance reached (${localExternalCalls}/${budget.maxExternalCalls} calls)` : `model turn limit reached (${budget.maxIterations} turns)`);
 
   for (let iteration = 1; iteration <= hardCap; iteration += 1) {
     if (signal.aborted) throw new Error("Run exceeded its runtime budget");
@@ -96,7 +100,7 @@ export async function runAgentLoop<R>(options: {
       lastSubmitError = null;
     }
 
-    await onEvent?.({ type: "llm_call", iteration, forced: forceSubmit });
+    await onEvent?.({ type: "llm_call", iteration, forced: forceSubmit, ...(forceSubmit ? { forcedReason: forcedReason() } : {}) });
     const response = await client.chat.completions.create({
       model,
       messages,
@@ -141,8 +145,9 @@ export async function runAgentLoop<R>(options: {
       // enough — the loop has to refuse, or the budget cap means nothing and the loop never ends.
       if (forceSubmit) {
         refusedWhileForced += 1;
-        await onEvent?.({ type: "tool_refused", iteration, name, reason: "budget or turn limit reached" });
-        messages.push({ role: "tool", tool_call_id: call.id, content: `Research is closed for this task: the ${callsSpent() ? "external-call" : "turn"} budget is spent. Call ${submit.name} now with your conclusion based on what you already have.` });
+        const reason = forcedReason();
+        await onEvent?.({ type: "tool_refused", iteration, name, reason });
+        messages.push({ role: "tool", tool_call_id: call.id, content: `Research is closed for this task because the ${reason}. Call ${submit.name} now with your conclusion based on what you already have.` });
         continue;
       }
 
@@ -166,8 +171,9 @@ export async function runAgentLoop<R>(options: {
 
       const cost = tool.externalCalls ?? 1;
       if (cost > 0 && localExternalCalls + cost > budget.maxExternalCalls) {
-        await onEvent?.({ type: "tool_refused", iteration, name, reason: "external-call allowance spent" });
-        messages.push({ role: "tool", tool_call_id: call.id, content: `Your external-call allowance (${budget.maxExternalCalls}) is spent. Call ${submit.name} with what you have.` });
+        const reason = `agent tool-call allowance reached (${localExternalCalls}/${budget.maxExternalCalls} calls)`;
+        await onEvent?.({ type: "tool_refused", iteration, name, reason });
+        messages.push({ role: "tool", tool_call_id: call.id, content: `Your ${reason}. Call ${submit.name} with what you have.` });
         continue;
       }
 
@@ -231,6 +237,7 @@ async function salvageAsJson<R>(options: {
 export interface RunBudget {
   spend(externalCalls: number, costUsd: number): boolean;
   exhausted(): boolean;
+  exhaustionReason(): string | null;
   snapshot(): { externalCalls: number; costUsd: number };
 }
 
@@ -241,6 +248,11 @@ export function createRunBudget(limits: { maxExternalCalls: number; maxCostUsd: 
   return {
     spend(calls, cost) { externalCalls += calls; costUsd += cost; return externalCalls < limits.maxExternalCalls && costUsd < limits.maxCostUsd; },
     exhausted() { return externalCalls >= limits.maxExternalCalls || costUsd >= limits.maxCostUsd; },
+    exhaustionReason() {
+      if (externalCalls >= limits.maxExternalCalls) return `run external-call budget reached (${externalCalls}/${limits.maxExternalCalls} calls)`;
+      if (costUsd >= limits.maxCostUsd) return `run cost budget reached ($${costUsd.toFixed(4)}/$${limits.maxCostUsd.toFixed(2)})`;
+      return null;
+    },
     snapshot() { return { externalCalls, costUsd }; },
   };
 }
@@ -251,7 +263,7 @@ export function createRunBudget(limits: { maxExternalCalls: number; maxCostUsd: 
  * whole run allowance and every agent after it starts already-forced.
  */
 export function withIterationCap(runBudget: RunBudget, maxIterations: number, maxExternalCalls: number): AgentBudget {
-  return { maxIterations, maxExternalCalls, spend: runBudget.spend, exhausted: runBudget.exhausted };
+  return { maxIterations, maxExternalCalls, spend: runBudget.spend, exhausted: runBudget.exhausted, exhaustionReason: runBudget.exhaustionReason };
 }
 
 /**

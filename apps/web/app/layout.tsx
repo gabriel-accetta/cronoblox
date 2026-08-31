@@ -7,7 +7,7 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "Cronoblox — Roblox breakout intelligence",
+  title: "Cronoblox: Roblox breakout intelligence",
   description: "Evidence-linked due diligence for emerging Roblox games.",
 };
 

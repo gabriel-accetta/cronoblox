@@ -1,8 +1,8 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, Circle, ExternalLink, LoaderCircle, ShieldAlert, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, Circle, Clock3, ExternalLink, LoaderCircle, ShieldAlert, X } from "lucide-react";
 import type { BreakoutPotential, Evidence, Report, RunEvent } from "@cronoblox/contracts";
 
 type RunDetail = { run: import("@cronoblox/contracts").RunSummary; events: RunEvent[]; report: Report | null };
@@ -28,6 +28,31 @@ export default function RunPage({ params }: { params: Promise<{ id: string }> })
 function RunHeader() { return <header className="topbar run-topbar"><a className="brand" href="/" aria-label="Cronoblox home"><img className="brand-logo" src="/cronoblox-logo.png" alt="Cronoblox" width={160} height={22} /></a><a className="back-link" href="/"><ArrowLeft /> <span>NEW AUDIT</span></a></header>; }
 function LoadingPage() { return <main className="run-shell"><RunHeader /><div className="run-loading"><LoaderCircle /><p>Loading investigation…</p></div></main>; }
 
+function formatElapsed(milliseconds: number) {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return hours > 0
+    ? `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
+    : `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function useElapsedTime(createdAt: string, running: boolean) {
+  const startedAt = new Date(createdAt).getTime();
+  const [elapsed, setElapsed] = useState(() => Math.max(0, Date.now() - startedAt));
+
+  useEffect(() => {
+    const update = () => setElapsed(Math.max(0, Date.now() - startedAt));
+    update();
+    if (!running) return;
+    const interval = window.setInterval(update, 1000);
+    return () => window.clearInterval(interval);
+  }, [createdAt, running, startedAt]);
+
+  return elapsed;
+}
+
 /* ------------------------------------------------------------------ progress */
 
 /**
@@ -46,6 +71,7 @@ function actorOf(event: RunEvent): { agent: string | null; action: string; detai
 function ProgressView({ detail, onRefresh }: { detail: RunDetail; onRefresh: () => void }) {
   const stateIndex = flow.indexOf(detail.run.state);
   const settled = ["COMPLETED", "FAILED", "CANCELLED"].includes(detail.run.state);
+  const elapsed = useElapsedTime(detail.run.created_at, !settled);
   // Newest first: during a live agent loop the reader should never have to chase the bottom of a growing list.
   const events = useMemo(() => [...detail.events].sort((a, b) => b.sequence - a.sequence), [detail.events]);
   async function action(kind: "cancel" | "retry") { await fetch(`/api/runs/${detail.run.id}/${kind}`, { method: "POST" }); onRefresh(); }
@@ -61,7 +87,9 @@ function ProgressView({ detail, onRefresh }: { detail: RunDetail; onRefresh: () 
           <span>{detail.run.profile_snapshot.label}</span>
         </p>
       </div>
-      <span className={`run-state big ${detail.run.state.toLowerCase()}`}>{detail.run.state.replaceAll("_", " ")}</span>
+      <div className="progress-status">
+        <span className="run-timer" aria-label={`Elapsed time ${formatElapsed(elapsed)}`}><Clock3 /> {formatElapsed(elapsed)}</span>
+      </div>
     </div>
 
     <section className="pipeline-card"><div className="pipeline-line" />{flow.map((state, index) => {
@@ -91,7 +119,7 @@ function ProgressView({ detail, onRefresh }: { detail: RunDetail; onRefresh: () 
         <div><span>PROFILE</span><strong>{detail.run.profile_snapshot.label}</strong><p>{detail.run.profile_snapshot.description}</p></div>
         <div><span>MODE</span><strong>{detail.run.input.user_mode === "developer" ? "Developer" : "Investor / publisher"}</strong></div>
         <div><span>EFFORT</span><strong>{(detail.run.profile_snapshot.effort ?? "medium").toUpperCase()}</strong><p>{detail.run.profile_snapshot.limits.max_search_results} results per search</p></div>
-        <div><span>BUDGET</span><strong>{detail.run.profile_snapshot.limits.max_external_calls} calls · ${detail.run.profile_snapshot.limits.max_cost_usd.toFixed(2)} cap</strong><p>{detail.run.profile_snapshot.limits.max_critic_cycles} critic revision cycles</p></div>
+        <div><span>BUDGET</span><strong>{detail.run.profile_snapshot.limits.max_external_calls} calls · ${detail.run.profile_snapshot.limits.max_cost_usd.toFixed(2)} cap</strong><p>{detail.run.profile_snapshot.limits.max_critic_cycles} critic revision cycles. A turn is one model request; tool calls use the separate call budget.</p></div>
       </aside>
     </div>
 
@@ -215,7 +243,7 @@ function EvidenceDrawer({ runId, ids, label, summary, onClose }: { runId: string
         <div><span>EVIDENCE WORKSPACE</span><small>{label} · {items.length} records, strongest first</small></div>
         <button onClick={onClose} aria-label="Close evidence drawer"><X /></button>
       </header>
-      {summary && <p className="drawer-summary">{summary}</p>}
+      {summary && <p className="drawer-summary">{briefSummary(summary)}</p>}
       {query.isLoading ? <div className="drawer-loading"><LoaderCircle className="spin" /></div>
         : items.length === 0 ? <div className="drawer-empty">No evidence records were linked here.</div>
         : items.map((item, index) => <article key={item.id}>
@@ -238,4 +266,13 @@ function EvidenceDrawer({ runId, ids, label, summary, onClose }: { runId: string
         </article>)}
     </aside>
   </div>;
+}
+
+function briefSummary(summary: string) {
+  const normalized = summary.replace(/\s+/g, " ").trim();
+  const sentences = normalized.match(/[^.!?]+[.!?]+(?:\s|$)?/g) ?? [];
+  const preview = (sentences.slice(0, 2).join(" ").trim() || normalized);
+  if (preview.length <= 280) return preview;
+  const shortened = preview.slice(0, 280).replace(/\s+\S*$/, "");
+  return `${shortened}…`;
 }

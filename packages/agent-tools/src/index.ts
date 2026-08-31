@@ -81,7 +81,7 @@ export function describeToolArgs(args: unknown): string | null {
 export function emitAgentEvent(context: ModuleContext, agentName: string, event: AgentEvent): Promise<void> | void {
   switch (event.type) {
     case "llm_call":
-      return event.forced ? context.emit("info", `${agentName}.finalizing`, `${agentName} is wrapping up (budget or turn limit reached)`) : undefined;
+      return event.forced ? context.emit("info", `${agentName}.finalizing`, `${agentName} is wrapping up — ${event.forcedReason ?? "a conclusion is required"}`, { detail: `finalizing — ${event.forcedReason ?? "a conclusion is required"}`, reason: event.forcedReason ?? null }) : undefined;
     case "tool_call": {
       const detail = describeToolArgs(event.args);
       return context.emit("info", `${agentName}.tool_call`, detail ? `${agentName} called ${event.name} — ${detail}` : `${agentName} called ${event.name}`, { tool: event.name, detail, args: event.args });
