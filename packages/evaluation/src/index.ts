@@ -10,6 +10,20 @@ import { sql } from "@cronoblox/db";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const spec = JSON.parse(await readFile(resolve(here, "../cases.json"), "utf8"));
+
+/**
+ * Two ways to read a finished sweep back. Default: straight out of Postgres. `--remote <origin>`
+ * instead replays the sweep manifest through the deployed instance's own public JSON API, so the
+ * published table can cite live, clickable run URLs a reader can open and audit themselves.
+ */
+const remoteFlag = process.argv.indexOf("--remote");
+const remoteOrigin = remoteFlag >= 0 ? (process.argv[remoteFlag + 1] ?? "").replace(/\/$/, "") : null;
+const manifest = remoteOrigin
+  ? JSON.parse(await readFile(resolve(here, "../../../evaluation-output/sweep.json"), "utf8")) as { origin: string; runs: { case_id: string; profile: string; run_id: string }[] }
+  : null;
+if (remoteOrigin && manifest && manifest.origin.replace(/\/$/, "") !== remoteOrigin) {
+  console.warn(`warning: sweep.json was produced against ${manifest.origin}, reading ${remoteOrigin}`);
+}
 const { baseline: BASELINE, solution: SOLUTION } = spec.profiles as { baseline: string; solution: string };
 
 type Metrics = {
@@ -37,10 +51,40 @@ async function findRun(placeId: string, profileId: string) {
   return rows[0] ?? null;
 }
 
-async function measure(placeId: string, profileId: string): Promise<Metrics> {
-  const run = await findRun(placeId, profileId);
-  if (!run) return { ...EMPTY };
+type Loaded = { run: { id: string; state: string; error: string | null; started_at: Date | null; completed_at: Date | null } | null; report: Record<string, any> | null; evidenceRecords: number; evidenceSources: number; evidenceContradicting: number; modelTurns: number; toolCalls: number };
 
+function metricsOf(loaded: Loaded): Metrics {
+  const { run, report } = loaded;
+  if (!run) return { ...EMPTY };
+  const claims = report ? [...(report.supporting_claims ?? []), ...(report.risk_claims ?? [])] : [];
+  const initial = report?.initial_verdict?.breakout_potential ?? null;
+  const final = report?.verdict?.breakout_potential ?? null;
+  const ladder = ["LOW", "MODERATE", "HIGH", "VERY HIGH"];
+  return {
+    run_id: run.id,
+    state: run.state,
+    error: run.error,
+    runtime_ms: report?.runtime_ms ?? (run.completed_at && run.started_at ? run.completed_at.getTime() - run.started_at.getTime() : null),
+    cost_usd: report?.approximate_cost_usd ?? null,
+    evidence_records: loaded.evidenceRecords,
+    distinct_sources: loaded.evidenceSources,
+    claims: claims.length,
+    claims_with_evidence: claims.filter((claim: any) => (claim.evidence_ids ?? []).length > 0).length,
+    risk_claims: report?.risk_claims?.length ?? 0,
+    contradicting_evidence: loaded.evidenceContradicting,
+    objections: report?.critic?.objections?.length ?? 0,
+    model_turns: loaded.modelTurns,
+    tool_calls: loaded.toolCalls,
+    initial_rating: initial,
+    final_rating: final,
+    rating_lowered: Boolean(initial && final && ladder.indexOf(final) < ladder.indexOf(initial)),
+    verification_status: report?.critic?.verification_status ?? null,
+  };
+}
+
+async function loadFromDb(placeId: string, profileId: string): Promise<Loaded> {
+  const run = await findRun(placeId, profileId);
+  if (!run) return { run: null, report: null, evidenceRecords: 0, evidenceSources: 0, evidenceContradicting: 0, modelTurns: 0, toolCalls: 0 };
   const [reportRow] = await sql<{ report: Record<string, any> }[]>`select report from reports where run_id = ${run.id}`;
   const [evidenceRow] = await sql<{ records: string; sources: string; contradicting: string }[]>`
     select count(*)::text as records,
@@ -51,39 +95,44 @@ async function measure(placeId: string, profileId: string): Promise<Metrics> {
     select count(*) filter (where event_type like '%.llm_result')::text as turns,
            count(*) filter (where event_type like '%.tool_call')::text as tools
     from run_events where run_id = ${run.id}`;
-
-  const report = reportRow?.report ?? null;
-  const claims = report ? [...(report.supporting_claims ?? []), ...(report.risk_claims ?? [])] : [];
-  const initial = report?.initial_verdict?.breakout_potential ?? null;
-  const final = report?.verdict?.breakout_potential ?? null;
-  const ladder = ["LOW", "MODERATE", "HIGH", "VERY HIGH"];
-
   return {
-    run_id: run.id,
-    state: run.state,
-    error: run.error,
-    runtime_ms: report?.runtime_ms ?? (run.completed_at && run.started_at ? run.completed_at.getTime() - run.started_at.getTime() : null),
-    cost_usd: report?.approximate_cost_usd ?? null,
-    evidence_records: Number(evidenceRow?.records ?? 0),
-    distinct_sources: Number(evidenceRow?.sources ?? 0),
-    claims: claims.length,
-    claims_with_evidence: claims.filter((claim: any) => (claim.evidence_ids ?? []).length > 0).length,
-    risk_claims: report?.risk_claims?.length ?? 0,
-    contradicting_evidence: Number(evidenceRow?.contradicting ?? 0),
-    objections: report?.critic?.objections?.length ?? 0,
-    model_turns: Number(eventRow?.turns ?? 0),
-    tool_calls: Number(eventRow?.tools ?? 0),
-    initial_rating: initial,
-    final_rating: final,
-    rating_lowered: Boolean(initial && final && ladder.indexOf(final) < ladder.indexOf(initial)),
-    verification_status: report?.critic?.verification_status ?? null,
+    run, report: reportRow?.report ?? null,
+    evidenceRecords: Number(evidenceRow?.records ?? 0),
+    evidenceSources: Number(evidenceRow?.sources ?? 0),
+    evidenceContradicting: Number(evidenceRow?.contradicting ?? 0),
+    modelTurns: Number(eventRow?.turns ?? 0),
+    toolCalls: Number(eventRow?.tools ?? 0),
   };
+}
+
+async function loadFromApi(origin: string, runId: string): Promise<Loaded> {
+  const detail = await fetch(`${origin}/api/runs/${runId}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  if (!detail?.run) return { run: null, report: null, evidenceRecords: 0, evidenceSources: 0, evidenceContradicting: 0, modelTurns: 0, toolCalls: 0 };
+  const evidence: any[] = await fetch(`${origin}/api/runs/${runId}/evidence`).then((r) => (r.ok ? r.json() : { evidence: [] })).then((body) => body.evidence ?? []).catch(() => []);
+  const events: any[] = detail.events ?? [];
+  return {
+    run: { id: detail.run.id, state: detail.run.state, error: detail.run.error ?? null, started_at: new Date(detail.run.created_at), completed_at: new Date(detail.run.updated_at) },
+    report: detail.report ?? null,
+    evidenceRecords: evidence.length,
+    evidenceSources: new Set(evidence.map((item) => item.source?.url).filter(Boolean)).size,
+    evidenceContradicting: evidence.filter((item) => item.relationship === "contradicts").length,
+    modelTurns: events.filter((event) => String(event.event_type).endsWith(".llm_result")).length,
+    toolCalls: events.filter((event) => String(event.event_type).endsWith(".tool_call")).length,
+  };
+}
+
+async function measure(caseId: string, placeId: string, profileId: string): Promise<Metrics> {
+  if (remoteOrigin && manifest) {
+    const entry = manifest.runs.find((item) => item.case_id === caseId && item.profile === profileId);
+    return entry ? metricsOf(await loadFromApi(remoteOrigin, entry.run_id)) : { ...EMPTY };
+  }
+  return metricsOf(await loadFromDb(placeId, profileId));
 }
 
 type CaseResult = { id: string; place_id: string; label: string; role: string; hard_case?: boolean; baseline: Metrics; solution: Metrics };
 const results: CaseResult[] = [];
 for (const item of spec.cases) {
-  results.push({ ...item, baseline: await measure(item.place_id, BASELINE), solution: await measure(item.place_id, SOLUTION) });
+  results.push({ ...item, baseline: await measure(item.id, item.place_id, BASELINE), solution: await measure(item.id, item.place_id, SOLUTION) });
 }
 
 const scored = (side: "baseline" | "solution") => results.filter((r) => r[side].state === "COMPLETED");
@@ -147,15 +196,20 @@ const perCase = [
   }),
 ].join("\n");
 
+const runLink = (m: Metrics) => {
+  if (!m.run_id) return "—";
+  if (!remoteOrigin) return `\`${m.run_id}\` (${m.state ?? "not run"})`;
+  return `[report](${remoteOrigin}/runs/${m.run_id}) · [trajectory](${remoteOrigin}/runs/${m.run_id}?view=trajectory)<br>\`${m.run_id}\``;
+};
 const runIds = [
   `| Case | Baseline run | Full run |`,
   `| --- | --- | --- |`,
-  ...results.map((r) => `| ${r.label} | \`${r.baseline.run_id ?? "—"}\` (${r.baseline.state ?? "not run"}) | \`${r.solution.run_id ?? "—"}\` (${r.solution.state ?? "not run"}) |`),
+  ...results.map((r) => `| ${r.label} | ${runLink(r.baseline)} | ${runLink(r.solution)} |`),
 ].join("\n");
 
 const markdown = `# Evaluation — simple baseline vs. Cronoblox agent
 
-Generated: ${generatedAt} · ${results.length} frozen cases · every number computed from persisted run records by \`pnpm evaluate\`.
+Generated: ${generatedAt} · ${results.length} frozen cases · every number computed from persisted run records by \`pnpm evaluate\`${remoteOrigin ? `, read back through the deployed instance’s public API at <${remoteOrigin}>` : ""}.
 
 **Primary metric.** ${spec.primary_metric}
 
@@ -185,11 +239,12 @@ ${spec.hard_case_finding}
 
 ## Run identifiers
 
-These ids belong to the sweep instance that produced this table, not to the public demo — the hosted
-app at <https://cronoblox.duckdns.org> keeps its own database. Open a row on whichever instance ran
-it (\`/runs/<id>\`, or \`/runs/<id>?view=trajectory\` for the full agent trace), or regenerate the whole
-table on your own machine with \`pnpm evaluate:sweep && pnpm evaluate\`. Four traces from these exact
-runs are committed under \`trajectories/\` so they can be read with no instance at all.
+${remoteOrigin
+  ? `**Every run below is live and clickable.** These are the exact runs behind every number in this report, on the deployed instance at <${remoteOrigin}> — open any report, or its full agent trajectory, and audit the figures yourself. Regenerate the whole table from scratch with \`pnpm evaluate:sweep && pnpm evaluate --remote ${remoteOrigin}\`.`
+  : `These ids belong to the local instance that produced this table. Open a row at \`/runs/<id>\` (or \`/runs/<id>?view=trajectory\` for the full agent trace) on that instance, or regenerate the whole table with \`pnpm evaluate:sweep && pnpm evaluate\`.`}
+
+Four traces from these exact runs are also committed under \`trajectories/\` so they can be read with no
+instance at all.
 
 ${runIds}
 
@@ -201,4 +256,4 @@ ${spec.selection_method}
 await writeFile(resolve(outputDir, "evaluation.md"), markdown);
 console.log(markdown);
 console.log(`\nWrote evaluation-output/evaluation.{json,md}`);
-await sql.end();
+if (!remoteOrigin) await sql.end();

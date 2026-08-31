@@ -1,0 +1,110 @@
+{
+  "origin": "https://cronoblox.duckdns.org",
+  "generated_at": "2026-08-31T15:45:00.000Z",
+  "settings": {
+    "effort": "medium",
+    "user_mode": "developer"
+  },
+  "runs": [
+    {
+      "case_id": "case_01",
+      "profile": "baseline",
+      "run_id": "4690be85-0881-41ac-adc1-b808ea013465"
+    },
+    {
+      "case_id": "case_01",
+      "profile": "full",
+      "run_id": "908d7cd2-129b-4c68-a444-c4fbb200ef06"
+    },
+    {
+      "case_id": "case_02",
+      "profile": "baseline",
+      "run_id": "e79dc7d2-35ef-4f66-b94c-dec669adb6b0"
+    },
+    {
+      "case_id": "case_02",
+      "profile": "full",
+      "run_id": "da152c5d-2d4b-4b3a-a1d9-76ea3924acfd"
+    },
+    {
+      "case_id": "case_03",
+      "profile": "baseline",
+      "run_id": "afc24d45-31b7-4285-91f8-05d1d1de6d01"
+    },
+    {
+      "case_id": "case_03",
+      "profile": "full",
+      "run_id": "386fc820-e20d-4a35-8b64-ab84c2104a72"
+    },
+    {
+      "case_id": "case_04",
+      "profile": "baseline",
+      "run_id": "bc1b29df-0065-4263-998a-321089a7dac4"
+    },
+    {
+      "case_id": "case_04",
+      "profile": "full",
+      "run_id": "c8497f0d-5221-47f5-bea4-26281f39e2bf"
+    },
+    {
+      "case_id": "case_05",
+      "profile": "baseline",
+      "run_id": "095258c2-b31e-4afe-b414-d3295495be1a"
+    },
+    {
+      "case_id": "case_05",
+      "profile": "full",
+      "run_id": "92380e97-dfce-413b-b111-848bebad1a88"
+    },
+    {
+      "case_id": "case_06",
+      "profile": "baseline",
+      "run_id": "a77697e2-707b-4d6e-a827-eadf761c7efd"
+    },
+    {
+      "case_id": "case_06",
+      "profile": "full",
+      "run_id": "37f9cc67-33c7-40af-975c-2d59dbe472bb"
+    },
+    {
+      "case_id": "case_07",
+      "profile": "baseline",
+      "run_id": "03bf3c96-0f56-4e7b-98e6-4dea6ba633d6"
+    },
+    {
+      "case_id": "case_07",
+      "profile": "full",
+      "run_id": "85faa28a-903a-4a60-bebf-c769f4714cfe"
+    },
+    {
+      "case_id": "case_08",
+      "profile": "baseline",
+      "run_id": "c4a2a873-d97d-49d6-851a-ed1d4b5dc242"
+    },
+    {
+      "case_id": "case_08",
+      "profile": "full",
+      "run_id": "92137d8d-99ca-4b6f-b67e-3c89a77fde27"
+    },
+    {
+      "case_id": "case_09",
+      "profile": "baseline",
+      "run_id": "cb85a0f8-daf3-4e74-8a12-3b49c232a8e2"
+    },
+    {
+      "case_id": "case_09",
+      "profile": "full",
+      "run_id": "173bdc54-e15e-49a6-bd07-7c9adc00c0eb"
+    },
+    {
+      "case_id": "case_10",
+      "profile": "baseline",
+      "run_id": "8e72b91a-ddd0-4563-9604-fff37d0c9be9"
+    },
+    {
+      "case_id": "case_10",
+      "profile": "full",
+      "run_id": "cb2c0733-a097-44a5-b7ec-4ed3b144b9ba"
+    }
+  ]
+}

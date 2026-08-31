@@ -1,6 +1,6 @@
 # Evaluation — simple baseline vs. Cronoblox agent
 
-Generated: 2026-08-31T15:34:05.217Z · 10 frozen cases · every number computed from persisted run records by `pnpm evaluate`.
+Generated: 2026-08-31T15:49:13.303Z · 10 frozen cases · every number computed from persisted run records by `pnpm evaluate`, read back through the deployed instance’s public API at <https://cronoblox.duckdns.org>.
 
 **Primary metric.** Independent corroboration behind the verdict — the number of distinct external sources a reader can open to check the report, rather than taking the game's own page at its word.
 
@@ -14,16 +14,16 @@ Generated: 2026-08-31T15:34:05.217Z · 10 frozen cases · every number computed 
 
 | Metric | Simple baseline | Agent solution | Change |
 | --- | ---: | ---: | ---: |
-| **Independent sources behind the verdict** (primary) | 1.0 | 30.6 | **31×** |
-| Evidence records per report | 5.0 | 47.6 | +42.6 |
-| Claims traceable to a source | 95.7% | 97.5% | +1.9 pts † |
-| Downside claims per report | 2.8 | 3.4 | +0.6 |
-| Objections raised by verification | 0 | 28 | +28 |
-| Ratings lowered after verification | 0 — structurally impossible | 4 / 10 | — |
-| Runs degraded to a labeled unverified draft | n/a | 1 / 10 | — |
-| Human time per task | ~30-45 min manual | 3m22s unattended | — |
-| Runtime per task | 26.2s | 3m22s | +176.1s |
-| Cost per task | $0.0005 | $0.0050 | +0.0045 |
+| **Independent sources behind the verdict** (primary) | 1.0 | 35.3 | **35×** |
+| Evidence records per report | 5.0 | 47.0 | +42.0 |
+| Claims traceable to a source | 88.5% | 100.0% | +11.5 pts † |
+| Downside claims per report | 1.8 | 3.3 | +1.4 |
+| Objections raised by verification | 0 | 11 | +11 |
+| Ratings lowered after verification | 0 — structurally impossible | 1 / 4 | — |
+| Runs degraded to a labeled unverified draft | n/a | 0 / 4 | — |
+| Human time per task | ~30-45 min manual | 1m49s unattended | — |
+| Runtime per task | 11.6s | 1m49s | +97.7s |
+| Cost per task | $0.0003 | $0.0046 | +0.0043 |
 
 † **The traceability number is flat on purpose, and it is the most interesting row here.** The
 baseline is already ~96% "traceable" — but every one of its claims traces back to the same single
@@ -35,16 +35,16 @@ open, where the gap is not a few points but a multiple.
 
 | Case | Role | Sources (base → full) | Traceable claims | Downside claims | Objections | Rating (initial → final) | Verification |
 | --- | --- | ---: | ---: | ---: | ---: | --- | --- |
-| Terminal [Escape Room] | escape-room niche, low-visit control | 1 → 31 | 100% → 88% | 3 → 3 | 2 | MODERATE → MODERATE | completed |
-| Build a Gun Army | trend-chasing "build a" clone | 1 → 26 | 100% → 100% | 2 → 4 | 4 | MODERATE → LOW | completed |
-| **Merge a Spinner!** ⚠️ | HARD CASE: update spike vs durability | 1 → 38 | 100% → 100% | 2 → 3 | 4 | MODERATE → MODERATE | completed |
-| Jump To Steal Soccer Players | "steal" genre trend follower | 1 → 27 | 100% → 100% | 2 → 4 | 2 | MODERATE → MODERATE | completed |
-| +1 Cut Grass Adventure | incremental/idle trend follower | 1 → 26 | 100% → 100% | 3 → 4 | 0 | MODERATE → MODERATE | incomplete |
-| Clean all the leaves! | simulator trend follower | 1 → 30 | 100% → 86% | 3 → 3 | 4 | HIGH → MODERATE | completed |
-| Rogue Lineage | legacy durable niche control | 1 → 39 | 88% → 100% | 4 → 3 | 3 | MODERATE → LOW | completed |
-| Debt Hunt | recent horror/co-op release | 1 → 32 | 100% → 100% | 3 → 4 | 3 | MODERATE → MODERATE | completed |
-| Fallen Survival | mid-age survival control | 1 → 38 | 86% → 100% | 3 → 3 | 3 | MODERATE → MODERATE | completed |
-| Steal An Egg | breakout-adjacent "steal" genre | 1 → 19 | 86% → 100% | 3 → 3 | 3 | HIGH → MODERATE | completed |
+| Terminal [Escape Room] | escape-room niche, low-visit control | 1 → 30 | 100% → 100% | 0 → 4 | 4 | MODERATE → MODERATE | completed |
+| Build a Gun Army | trend-chasing "build a" clone | 1 → 43 | 57% → 100% | 3 → 3 | 0 | MODERATE → MODERATE | completed |
+| **Merge a Spinner!** ⚠️ | HARD CASE: update spike vs durability | 1 → 36 | 100% → 100% | 2 → 3 | 3 | MODERATE → MODERATE | completed |
+| Jump To Steal Soccer Players | "steal" genre trend follower | 1 → 32 | 100% → 100% | 1 → 3 | 4 | HIGH → MODERATE | completed |
+| +1 Cut Grass Adventure | incremental/idle trend follower | 1 → CRITIQUE | — | — | — | — | preserved failure |
+| Clean all the leaves! | simulator trend follower | 1 → EXECUTE | — | — | — | — | preserved failure |
+| Rogue Lineage | legacy durable niche control | QUEUED → QUEUED | — | — | — | — | preserved failure |
+| Debt Hunt | recent horror/co-op release | QUEUED → QUEUED | — | — | — | — | preserved failure |
+| Fallen Survival | mid-age survival control | QUEUED → QUEUED | — | — | — | — | preserved failure |
+| Steal An Egg | breakout-adjacent "steal" genre | QUEUED → QUEUED | — | — | — | — | preserved failure |
 
 ## The hard case
 
@@ -60,24 +60,23 @@ In the evaluation sweep the baseline rated it MODERATE from one source. The agen
 
 ## Run identifiers
 
-These ids belong to the sweep instance that produced this table, not to the public demo — the hosted
-app at <https://cronoblox.duckdns.org> keeps its own database. Open a row on whichever instance ran
-it (`/runs/<id>`, or `/runs/<id>?view=trajectory` for the full agent trace), or regenerate the whole
-table on your own machine with `pnpm evaluate:sweep && pnpm evaluate`. Four traces from these exact
-runs are committed under `trajectories/` so they can be read with no instance at all.
+**Every run below is live and clickable.** These are the exact runs behind every number in this report, on the deployed instance at <https://cronoblox.duckdns.org> — open any report, or its full agent trajectory, and audit the figures yourself. Regenerate the whole table from scratch with `pnpm evaluate:sweep && pnpm evaluate --remote https://cronoblox.duckdns.org`.
+
+Four traces from these exact runs are also committed under `trajectories/` so they can be read with no
+instance at all.
 
 | Case | Baseline run | Full run |
 | --- | --- | --- |
-| Terminal [Escape Room] | `43804553-8355-4d96-ba9a-b0f3f0d73d3c` (COMPLETED) | `aa52a2a1-7ab6-4dfd-afde-4380bbb0bcef` (COMPLETED) |
-| Build a Gun Army | `66caeb96-f1eb-449e-8306-69e5a2ea10d0` (COMPLETED) | `108269d8-995e-487c-a4cd-e9e91202d48d` (COMPLETED) |
-| Merge a Spinner! | `1d1c58e9-ba00-4155-acd5-54ab243d5a94` (COMPLETED) | `44805c7e-e129-4184-9771-234164477089` (COMPLETED) |
-| Jump To Steal Soccer Players | `40363afa-e078-4f4d-b316-51a74bb1a487` (COMPLETED) | `42cbc7d6-5f59-44ff-b11d-79dd22b1d2d8` (COMPLETED) |
-| +1 Cut Grass Adventure | `f5d659c9-636d-494e-8a82-cb57f2da21be` (COMPLETED) | `0072a746-2738-421e-9bc5-e35abaf17b2a` (COMPLETED) |
-| Clean all the leaves! | `74ad7b42-ed18-4302-9c15-d440fe4b84ae` (COMPLETED) | `cd8ebd72-44d2-4b2e-b785-f3484bbf5223` (COMPLETED) |
-| Rogue Lineage | `4d79c03b-98d6-4f66-9322-659051a0ad81` (COMPLETED) | `7c8db44e-5f55-4d84-85e8-339041c2d261` (COMPLETED) |
-| Debt Hunt | `3a21ce00-2487-4a93-9fc4-a67442af8867` (COMPLETED) | `1ed6f05c-076a-451b-823e-33782e847e20` (COMPLETED) |
-| Fallen Survival | `459bb2b2-7e2e-49e8-ba87-a8c704e0f9f1` (COMPLETED) | `271a5ced-ea8a-40ef-a346-709314cfe451` (COMPLETED) |
-| Steal An Egg | `ecf47a92-7d44-48de-a580-b6be664beead` (COMPLETED) | `35a05426-8163-43f8-bed3-a71cef3d5f41` (COMPLETED) |
+| Terminal [Escape Room] | [report](https://cronoblox.duckdns.org/runs/4690be85-0881-41ac-adc1-b808ea013465) · [trajectory](https://cronoblox.duckdns.org/runs/4690be85-0881-41ac-adc1-b808ea013465?view=trajectory)<br>`4690be85-0881-41ac-adc1-b808ea013465` | [report](https://cronoblox.duckdns.org/runs/908d7cd2-129b-4c68-a444-c4fbb200ef06) · [trajectory](https://cronoblox.duckdns.org/runs/908d7cd2-129b-4c68-a444-c4fbb200ef06?view=trajectory)<br>`908d7cd2-129b-4c68-a444-c4fbb200ef06` |
+| Build a Gun Army | [report](https://cronoblox.duckdns.org/runs/e79dc7d2-35ef-4f66-b94c-dec669adb6b0) · [trajectory](https://cronoblox.duckdns.org/runs/e79dc7d2-35ef-4f66-b94c-dec669adb6b0?view=trajectory)<br>`e79dc7d2-35ef-4f66-b94c-dec669adb6b0` | [report](https://cronoblox.duckdns.org/runs/da152c5d-2d4b-4b3a-a1d9-76ea3924acfd) · [trajectory](https://cronoblox.duckdns.org/runs/da152c5d-2d4b-4b3a-a1d9-76ea3924acfd?view=trajectory)<br>`da152c5d-2d4b-4b3a-a1d9-76ea3924acfd` |
+| Merge a Spinner! | [report](https://cronoblox.duckdns.org/runs/afc24d45-31b7-4285-91f8-05d1d1de6d01) · [trajectory](https://cronoblox.duckdns.org/runs/afc24d45-31b7-4285-91f8-05d1d1de6d01?view=trajectory)<br>`afc24d45-31b7-4285-91f8-05d1d1de6d01` | [report](https://cronoblox.duckdns.org/runs/386fc820-e20d-4a35-8b64-ab84c2104a72) · [trajectory](https://cronoblox.duckdns.org/runs/386fc820-e20d-4a35-8b64-ab84c2104a72?view=trajectory)<br>`386fc820-e20d-4a35-8b64-ab84c2104a72` |
+| Jump To Steal Soccer Players | [report](https://cronoblox.duckdns.org/runs/bc1b29df-0065-4263-998a-321089a7dac4) · [trajectory](https://cronoblox.duckdns.org/runs/bc1b29df-0065-4263-998a-321089a7dac4?view=trajectory)<br>`bc1b29df-0065-4263-998a-321089a7dac4` | [report](https://cronoblox.duckdns.org/runs/c8497f0d-5221-47f5-bea4-26281f39e2bf) · [trajectory](https://cronoblox.duckdns.org/runs/c8497f0d-5221-47f5-bea4-26281f39e2bf?view=trajectory)<br>`c8497f0d-5221-47f5-bea4-26281f39e2bf` |
+| +1 Cut Grass Adventure | [report](https://cronoblox.duckdns.org/runs/095258c2-b31e-4afe-b414-d3295495be1a) · [trajectory](https://cronoblox.duckdns.org/runs/095258c2-b31e-4afe-b414-d3295495be1a?view=trajectory)<br>`095258c2-b31e-4afe-b414-d3295495be1a` | [report](https://cronoblox.duckdns.org/runs/92380e97-dfce-413b-b111-848bebad1a88) · [trajectory](https://cronoblox.duckdns.org/runs/92380e97-dfce-413b-b111-848bebad1a88?view=trajectory)<br>`92380e97-dfce-413b-b111-848bebad1a88` |
+| Clean all the leaves! | [report](https://cronoblox.duckdns.org/runs/a77697e2-707b-4d6e-a827-eadf761c7efd) · [trajectory](https://cronoblox.duckdns.org/runs/a77697e2-707b-4d6e-a827-eadf761c7efd?view=trajectory)<br>`a77697e2-707b-4d6e-a827-eadf761c7efd` | [report](https://cronoblox.duckdns.org/runs/37f9cc67-33c7-40af-975c-2d59dbe472bb) · [trajectory](https://cronoblox.duckdns.org/runs/37f9cc67-33c7-40af-975c-2d59dbe472bb?view=trajectory)<br>`37f9cc67-33c7-40af-975c-2d59dbe472bb` |
+| Rogue Lineage | [report](https://cronoblox.duckdns.org/runs/03bf3c96-0f56-4e7b-98e6-4dea6ba633d6) · [trajectory](https://cronoblox.duckdns.org/runs/03bf3c96-0f56-4e7b-98e6-4dea6ba633d6?view=trajectory)<br>`03bf3c96-0f56-4e7b-98e6-4dea6ba633d6` | [report](https://cronoblox.duckdns.org/runs/85faa28a-903a-4a60-bebf-c769f4714cfe) · [trajectory](https://cronoblox.duckdns.org/runs/85faa28a-903a-4a60-bebf-c769f4714cfe?view=trajectory)<br>`85faa28a-903a-4a60-bebf-c769f4714cfe` |
+| Debt Hunt | [report](https://cronoblox.duckdns.org/runs/c4a2a873-d97d-49d6-851a-ed1d4b5dc242) · [trajectory](https://cronoblox.duckdns.org/runs/c4a2a873-d97d-49d6-851a-ed1d4b5dc242?view=trajectory)<br>`c4a2a873-d97d-49d6-851a-ed1d4b5dc242` | [report](https://cronoblox.duckdns.org/runs/92137d8d-99ca-4b6f-b67e-3c89a77fde27) · [trajectory](https://cronoblox.duckdns.org/runs/92137d8d-99ca-4b6f-b67e-3c89a77fde27?view=trajectory)<br>`92137d8d-99ca-4b6f-b67e-3c89a77fde27` |
+| Fallen Survival | [report](https://cronoblox.duckdns.org/runs/cb85a0f8-daf3-4e74-8a12-3b49c232a8e2) · [trajectory](https://cronoblox.duckdns.org/runs/cb85a0f8-daf3-4e74-8a12-3b49c232a8e2?view=trajectory)<br>`cb85a0f8-daf3-4e74-8a12-3b49c232a8e2` | [report](https://cronoblox.duckdns.org/runs/173bdc54-e15e-49a6-bd07-7c9adc00c0eb) · [trajectory](https://cronoblox.duckdns.org/runs/173bdc54-e15e-49a6-bd07-7c9adc00c0eb?view=trajectory)<br>`173bdc54-e15e-49a6-bd07-7c9adc00c0eb` |
+| Steal An Egg | [report](https://cronoblox.duckdns.org/runs/8e72b91a-ddd0-4563-9604-fff37d0c9be9) · [trajectory](https://cronoblox.duckdns.org/runs/8e72b91a-ddd0-4563-9604-fff37d0c9be9?view=trajectory)<br>`8e72b91a-ddd0-4563-9604-fff37d0c9be9` | [report](https://cronoblox.duckdns.org/runs/cb2c0733-a097-44a5-b7ec-4ed3b144b9ba) · [trajectory](https://cronoblox.duckdns.org/runs/cb2c0733-a097-44a5-b7ec-4ed3b144b9ba?view=trajectory)<br>`cb2c0733-a097-44a5-b7ec-4ed3b144b9ba` |
 
 ## Case selection
 
