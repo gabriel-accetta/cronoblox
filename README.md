@@ -19,7 +19,7 @@ agents work.
 | | |
 | --- | --- |
 | **Live demo** — run it yourself, nothing to install | **<https://cronoblox.duckdns.org>** |
-| **Solution video (5 min)** | https://YOUR-VIDEO-LINK |
+| **Solution video (5 min)** | https://www.youtube.com/watch?v=_Hj7RvNAIeQ |
 | **Evaluation** — baseline vs. agent, 10 frozen cases | [`evaluation-output/evaluation.md`](evaluation-output/evaluation.md) |
 | **Improvement changelog** + failure mode + hot take | [`IMPROVEMENT_CHANGELOG.md`](IMPROVEMENT_CHANGELOG.md) |
 | **Agent trajectories** | [§ Agent trajectories](#agent-trajectories) |

@@ -6,11 +6,11 @@
     "quality_profile": "showcase",
     "viewBox": [
       1340,
-      840
+      720
     ],
     "repository": {
       "url": "https://github.com/gabriel-accetta/cronoblox",
-      "revision": "bbd928e86056813914c1ffb05d813612883fb2dc"
+      "revision": "0914ce9e032f45439c449787a255d87af1c53436"
     },
     "views": [
       {
@@ -69,7 +69,7 @@
       "tag": "game-level data only",
       "pos": [
         400,
-        60
+        50
       ],
       "size": [
         880,
@@ -97,7 +97,7 @@
       "sublabel": "browser · one public game URL",
       "pos": [
         60,
-        270
+        230
       ],
       "size": [
         200,
@@ -112,7 +112,7 @@
       "tag": "required",
       "pos": [
         400,
-        270
+        230
       ],
       "size": [
         200,
@@ -132,7 +132,7 @@
       "sublabel": "catalog + discovery charts",
       "pos": [
         1080,
-        270
+        230
       ],
       "size": [
         200,
@@ -153,7 +153,7 @@
       "sublabel": "YouTube creator coverage",
       "pos": [
         740,
-        270
+        230
       ],
       "size": [
         200,
@@ -175,7 +175,7 @@
       "tag": ":3017",
       "pos": [
         60,
-        480
+        410
       ],
       "size": [
         200,
@@ -196,7 +196,7 @@
       "tag": "no domain state",
       "pos": [
         400,
-        480
+        410
       ],
       "size": [
         200,
@@ -217,7 +217,7 @@
       "tag": "orchestration is code",
       "pos": [
         740,
-        480
+        410
       ],
       "size": [
         200,
@@ -241,7 +241,7 @@
       "sublabel": "forms the Thesis; may delegate",
       "pos": [
         1080,
-        480
+        410
       ],
       "size": [
         200,
@@ -263,7 +263,7 @@
       "tag": "may only lower",
       "pos": [
         1080,
-        690
+        590
       ],
       "size": [
         200,
@@ -285,7 +285,7 @@
       "tag": "authoritative",
       "pos": [
         60,
-        690
+        590
       ],
       "size": [
         200,
@@ -305,7 +305,7 @@
       "sublabel": "FINALIZE · fail closed",
       "pos": [
         400,
-        690
+        590
       ],
       "size": [
         200,
@@ -323,10 +323,10 @@
       "id": "openrouter",
       "type": "external",
       "label": "OpenRouter",
-      "sublabel": "LLM inference · one shared RunBudget",
+      "sublabel": "LLM inference · shared RunBudget",
       "pos": [
         740,
-        690
+        590
       ],
       "size": [
         200,
@@ -370,7 +370,7 @@
       "to": "engine",
       "label": "executeRun(runId)",
       "variant": "emphasis",
-      "labelDy": -60,
+      "labelDy": -30,
       "labelDx": -60
     },
     {
@@ -384,7 +384,7 @@
       "from": "engine",
       "to": "orchestrator",
       "label": "2 · PLAN / EXECUTE",
-      "labelDy": -70,
+      "labelDy": -30,
       "labelDx": -60
     },
     {
@@ -466,7 +466,8 @@
       "from": "engine",
       "to": "gate",
       "label": "4 · FINALIZE",
-      "variant": "security"
+      "variant": "security",
+      "labelDy": -30
     },
     {
       "id": "persist-report",
@@ -479,7 +480,9 @@
       "id": "read-back",
       "from": "postgres",
       "to": "web",
-      "label": "GET /api/runs/:id"
+      "label": "GET /api/runs/:id",
+      "labelDx": -50,
+      "labelDy": -20
     }
   ],
   "cards": [
@@ -507,8 +510,7 @@
       "items": [
         "The critic may hold or lower the rating, never raise it",
         "keepKnownIds strips any cited id that has no persisted record",
-        "assertReportEvidence throws rather than ship an unbacked claim",
-        "A missing provider degrades loudly instead of fabricating a value"
+        "assertReportEvidence throws rather than ship an unbacked claim"
       ]
     }
   ]
